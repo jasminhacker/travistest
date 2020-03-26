@@ -33,7 +33,8 @@ def main():
         run_server()
     if command == 'system-install':
         system_install()
-
+    if command == 'system-install-default':
+        system_install(default=True)
 
 def usage():
     print(f'''usage: {sys.argv[0]} [run | system-install | help]
@@ -92,29 +93,33 @@ def user_install():
     subprocess.call(['/bin/bash', 'setup/user_install.sh'])
 
 
-def system_install():
+def system_install(default=False):
     print('''You are about to install raveberry system-wide. This will make it start on boot and enable features specified in the config file.
 Depending on your configuration, this will alter some system files. (Although everything *should* work fine, backups are recommended)
 Config-file location: ''' + configfile_path)
 
-    answer = input('Is this the configuration you want to install raveberry with? [Y/n] ')
-    while answer not in ['', 'Y', 'y', 'Yes', 'yes', 'N', 'n', 'No', 'no']:
-        answer = input('Please answers "yes" or "no": ')
-    if answer in ['N', 'n', 'No', 'no']:
-        sys.exit(0)
+    if not default:
+        answer = input('Is this the configuration you want to install raveberry with? [Y/n] ')
+        while answer not in ['', 'Y', 'y', 'Yes', 'yes', 'N', 'n', 'No', 'no']:
+            answer = input('Please answers "yes" or "no": ')
+        if answer in ['N', 'n', 'No', 'no']:
+            sys.exit(0)
 
     read_config()
     if os.environ['DB_BACKUP']:
         # Using database backup, not asking for admin password
         pass
     else:
-        while True:
-            admin_password = getpass.getpass('Set admin password: ')
-            admin_password_confirmed = getpass.getpass('Confirm admin password: ')
-            if admin_password == admin_password_confirmed:
-                os.environ['ADMIN_PASSWORD'] = admin_password
-                break
-            print("Passwords didn't match")
+        if not default:
+            while True:
+                admin_password = getpass.getpass('Set admin password: ')
+                admin_password_confirmed = getpass.getpass('Confirm admin password: ')
+                if admin_password == admin_password_confirmed:
+                    break
+                print("Passwords didn't match")
+        else:
+            admin_password = 'admin'
+        os.environ['ADMIN_PASSWORD'] = admin_password
     subprocess.call(['sudo', '-E', '/bin/bash', 'setup/setup.sh'])
 
 
