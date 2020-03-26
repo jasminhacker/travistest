@@ -12,6 +12,8 @@ before_deploy:
     - mkdir raveberry
     # move all files except the setup.py and the newly created folder
     - mv `\ls -A1 | grep -v -E '(setup.py|raveberry)'` raveberry
+    - ls
+    - ls raveberry
 deploy:
   provider: pypi
   user: __token__
