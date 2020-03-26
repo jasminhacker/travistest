@@ -1,3 +1,4 @@
+source /home/travis/virtualenv/python3.7/bin/activate
 python --version
 python3 --version
 pip --version
