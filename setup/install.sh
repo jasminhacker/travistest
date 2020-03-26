@@ -1,7 +1,7 @@
 echo "*** Installing apt Dependencies ***"
 apt-get update
 packagelist=(
-	python3-pip #python package management
+	python3-pip python3-setuptools #python package management
 	ffmpeg #audio conversion
 	atomicparsley #thumbnail embedding
 	nginx #webserver
