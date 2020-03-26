@@ -1,10 +1,16 @@
 language: python
 python:
-- '3.7'
-install:
-- echo "nothing to install"
-script:
-- echo "nothing to script"
+    - '3.7'
+install: exit 0
+script: exit 0
+
+before_deploy:
+    - mkdir raveberry
+    - mv * raveberry/
+    - mv raveberry/setup.py .
+    - cd raveberry
+    - HOME= yarn install
+    - cd ..
 deploy:
   provider: pypi
   user: __token__
