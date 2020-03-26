@@ -1,7 +1,11 @@
 language: python
 python:
     - '3.7'
-install: ":"
+
+before_install:
+    - curl -o- -L https://yarnpkg.com/install.sh | bash
+install:
+    - yarn install
 script: ":"
 
 before_deploy:
