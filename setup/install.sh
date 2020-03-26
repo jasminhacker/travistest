@@ -1,3 +1,8 @@
+python --version
+python3 --version
+pip --version
+pip3 --version
+
 echo "*** Installing apt Dependencies ***"
 apt-get update
 packagelist=(
