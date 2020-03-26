@@ -13,6 +13,7 @@ addons:
 
 install:
     - bin/raveberry system-install
+script: ":"
 
 before_deploy:
     - yarn install
