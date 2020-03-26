@@ -24,17 +24,17 @@ def main():
         usage()
         sys.exit(1)
     command = sys.argv[1]
-    if command not in ['run', 'system-install', 'help']:
+    if command not in ['run', 'system-install', 'system-install-default', 'help']:
         usage()
         sys.exit(1)
-    if command == 'help':
-        usage()
     if command == 'run':
         run_server()
     if command == 'system-install':
         system_install()
     if command == 'system-install-default':
         system_install(default=True)
+    if command == 'help':
+        usage()
 
 def usage():
     print(f'''usage: {sys.argv[0]} [run | system-install | help]
