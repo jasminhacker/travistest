@@ -12,7 +12,7 @@ addons:
             - redis-server
 
 install:
-    - bin/raveberry system-install
+    - bin/raveberry system-install-default
 script: ":"
 
 before_deploy:
