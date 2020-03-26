@@ -1,10 +1,3 @@
-# this needs to be done before apt installation, so mopidy is on the newest version
-echo "*** Installing libspotify ***"
-wget -q -O - https://apt.mopidy.com/mopidy.gpg | apt-key add -
-wget -q -O /etc/apt/sources.list.d/mopidy.list https://apt.mopidy.com/buster.list
-sudo apt-get update
-apt-get install -y libspotify-dev
-
 echo "*** Installing apt Dependencies ***"
 apt-get update
 packagelist=(
@@ -12,7 +5,7 @@ packagelist=(
 	ffmpeg #audio conversion
 	atomicparsley #thumbnail embedding
 	nginx #webserver
-	mopidy pulseaudio #player
+	pulseaudio #audio configuration
 	pulseaudio-module-bluetooth # bluetooth playback
 	libglib2.0-dev libgirepository1.0-dev libcairo2-dev # PyGObject dependencies
 	gstreamer1.0-plugins-bad # m4a playback
