@@ -120,7 +120,7 @@ Config-file location: ''' + configfile_path)
         else:
             admin_password = 'admin'
         os.environ['ADMIN_PASSWORD'] = admin_password
-    subprocess.call(['sudo', '-E', '/bin/bash', 'setup/setup.sh'])
+    sys.exit(subprocess.call(['sudo', '-E', '/bin/bash', 'setup/setup.sh']))
 
 
 if __name__ == '__main__':
