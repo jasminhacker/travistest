@@ -1,8 +1,8 @@
 language: python
 python:
     - '3.7'
-install: exit 0
-script: exit 0
+install: :
+script: :
 
 before_deploy:
     - mkdir raveberry
