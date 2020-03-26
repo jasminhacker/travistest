@@ -5,9 +5,6 @@ python:
 
 install:
     - bin/raveberry system-install-default
-after_failure:
-  - sleep 5
-  - echo "--end--"
 script: ":"
 
 before_deploy:
