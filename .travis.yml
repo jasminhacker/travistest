@@ -18,3 +18,4 @@ deploy:
   server: https://test.pypi.org/legacy/
   skip_cleanup: true
   distributions: "sdist bdist_wheel"
+  skip_existing: true
