@@ -3,6 +3,8 @@ python:
 - '3.7'
 install:
 - echo "nothing to install"
+script:
+- echo "nothing to script"
 deploy:
   provider: pypi
   user: __token__
