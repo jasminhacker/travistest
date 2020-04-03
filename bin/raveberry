@@ -4,6 +4,7 @@ import sys
 import time
 import subprocess
 import configparser
+import pkg_resources
 import getpass
 import shutil
 
@@ -24,27 +25,35 @@ def main():
         usage()
         sys.exit(1)
     command = sys.argv[1]
-    if command not in ['run', 'system-install', 'system-install-default', 'help']:
-        usage()
-        sys.exit(1)
-    if command == 'run':
-        run_server()
-    if command == 'system-install':
-        system_install()
-    if command == 'system-install-default':
-        system_install(default=True)
     if command == 'help':
         usage()
+    elif command == 'run':
+        run_server()
+    elif command == 'system-install':
+        system_install()
+    elif command.lstrip('-') == 'version':
+        version()
+    else:
+        usage()
+        sys.exit(1)
+
 
 def usage():
-    print(f'''usage: {sys.argv[0]} [run | system-install | help]
+    print(f'''usage: {sys.argv[0]} [run | system-install | system-upgrade | help | version]
 
 run                     run a basic version of raveberry
 system-install          install raveberry into the system
+version                 print the version of this module
 help                    show this help and exit
 
 For more info visit https://github.com/raveberry/raveberry''')
 
+def version():
+    try:
+        print(pkg_resources.require('raveberry')[0].version)
+    except pkg_resources.DistributionNotFound:
+        print('raveberry is not currently installed')
+        sys.exit(1)
 
 def run_server():
     if not os.path.isfile('db.sqlite3'):
@@ -87,40 +96,38 @@ def user_install():
             print('please install missing packages: sudo apt-get install -y ' + ' '.join(missing_packages))
             sys.exit(1)
     else:
-        print('Warning: dpkg is not installed, could not check if dependencies are installed! Use at your own rist!')
+        print('Warning: dpkg is not installed, could not check if dependencies are installed! Use at your own risk!')
 
     read_config()
     subprocess.call(['/bin/bash', 'setup/user_install.sh'])
 
 
-def system_install(default=False):
+def system_install():
     print('''You are about to install raveberry system-wide. This will make it start on boot and enable features specified in the config file.
 Depending on your configuration, this will alter some system files. (Although everything *should* work fine, backups are recommended)
 Config-file location: ''' + configfile_path)
 
-    if not default:
-        answer = input('Is this the configuration you want to install raveberry with? [Y/n] ')
-        while answer not in ['', 'Y', 'y', 'Yes', 'yes', 'N', 'n', 'No', 'no']:
-            answer = input('Please answers "yes" or "no": ')
-        if answer in ['N', 'n', 'No', 'no']:
-            sys.exit(0)
+    answer = input('Is this the configuration you want to install raveberry with? [Y/n] ')
+    while answer not in ['', 'Y', 'y', 'Yes', 'yes', 'N', 'n', 'No', 'no']:
+        answer = input('Please answers "yes" or "no": ')
+    if answer in ['N', 'n', 'No', 'no']:
+        sys.exit(0)
 
     read_config()
-    if os.environ['DB_BACKUP']:
-        # Using database backup, not asking for admin password
+
+    db_exists = not subprocess.call('sudo -u postgres psql -lqt | cut -d \\| -f 1 | grep -qw "raveberry"', shell=True)
+    if os.environ['DB_BACKUP'] or db_exists:
+        # another database is already present, do not ask for a new admin password
         pass
     else:
-        if not default:
-            while True:
-                admin_password = getpass.getpass('Set admin password: ')
-                admin_password_confirmed = getpass.getpass('Confirm admin password: ')
-                if admin_password == admin_password_confirmed:
-                    break
-                print("Passwords didn't match")
-        else:
-            admin_password = 'admin'
-        os.environ['ADMIN_PASSWORD'] = admin_password
-    sys.exit(subprocess.call(['sudo', '-E', '/bin/bash', 'setup/setup.sh']))
+        while True:
+            admin_password = getpass.getpass('Set admin password: ')
+            admin_password_confirmed = getpass.getpass('Confirm admin password: ')
+            if admin_password == admin_password_confirmed:
+                os.environ['ADMIN_PASSWORD'] = admin_password
+                break
+            print("Passwords didn't match")
+    subprocess.call(['sudo', '-E', '/bin/bash', 'setup/setup.sh'])
 
 
 if __name__ == '__main__':

@@ -2,17 +2,21 @@
 
 Raveberry is a multi user music server that allows democratic selection of songs.
 
-It provides an intuitive interface for requesting songs and changing their order according to the rating that users have made.
+It provides an intuitive interface for requesting songs and changing their order according to the rating that users have made. It supports Youtube and Spotify as sources for music.
 
 ![](docs/showcase.gif "Showcase Gif")
 
 ## Installation
 
-Raveberry is meant to be installed on a Raspberry Pi. Then it works as a portable music server which you can take with you wherever you are. I used a Raspberry Pi 3B for development and testing of the software, but Raveberry should work on any Debian based Linux.
+Raveberry is meant to be installed on a Raspberry Pi. Then it works as a portable music server which you can take with you wherever you are. I use a Raspberry Pi 4B for development and testing of the software, but Raveberry should work on any Debian based Linux.
 
 Raveberry is available on PyPi:
 ```
-sudo apt-get install -y python3-pip ffmpeg atomicparsley mpd redis-server
+wget -q -O - https://apt.mopidy.com/mopidy.gpg | sudo apt-key add -
+sudo wget -q -O /etc/apt/sources.list.d/mopidy.list https://apt.mopidy.com/buster.list
+sudo apt-get update
+sudo apt-get install -y python3-pip ffmpeg atomicparsley mopidy redis-server libspotify-dev libglib2.0-dev libgirepository1.0-dev libcairo2-dev gstreamer1.0-plugins-bad
+
 pip3 install raveberry
 raveberry run
 ```
@@ -37,6 +41,18 @@ After the installation has finished `http://raveberry/` is up and ready to play 
 
 An introduction to basic functionality can be found in [`docs/functionality.md`](docs/functionality.md). Or just visit `http://raveberry/` and find out for yourself ; )
 
+### A Note about Ubuntu 18.04
+Mopidy 3.0 requires Python 3.7, while Ubuntu 18.04 ships with Python 3.6. It is possible to install it nevertheless, but it is not trivial. Refer to [this guide](https://mopidy.com/blog/2019/12/27/mopidy-3-faq/#what-about-mopidy-3-on-ubuntu-1804-lts) for instructions.
+
+## Updating
+
+Updating an existing installation is easy. Just update the PyPi package and rerun the system installation.
+```
+pip3 install -U raveberry
+raveberry run
+```
+Your database will be preserved, unless you specify a database backup in your config file.
+
 ## Features
 
 * **Live Updates**:
@@ -54,8 +70,14 @@ Specify a domain to make your Raveberry accessible from the world wide web.
 * **Privilege Levels**:
 Grant users additional permissions like playback control.
 
-* **Youtube as a Database**:
+* **Local Files Support**:
+Play all the files you already have in your local filesystem. Various filetypes supported.
+
+* **Youtube Support**:
 With `youtube-dl` as a media provider, all of Youtube is available to play.
+
+* **Spotify Support**:
+Raveberry's music player `mopidy` can play songs from Spotify, if you to log in with your account.
 
 * **Graphical Admin Interface**:
 Raveberry features a convenient way of modifying the behavior of the server, like hotspot configuration or download limitation.
