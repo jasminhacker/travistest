@@ -18,6 +18,12 @@ before_install:
     - wget http://archive.ubuntu.com/ubuntu/pool/universe/g/gst-python1.0/python3-gst-1.0_1.16.1-1_amd64.deb
     - ar x python3-gst-1.0_1.16.1-1_amd64.deb
     - tar -pxvf data.tar.xz
+    - sudo ls /usr/local/lib/ || true
+    - sudo ls /usr/local/lib/python3.7 || true
+    - sudo ls /usr/local/lib/python3.7/dist-packages || true
+    - sudo ls /usr/local/lib/python3.7/site-packages || true
+    - sudo ls /usr/local/lib/python3.7/dist-packages/gi || true
+    - sudo ls /usr/local/lib/python3.7/dist-packages/gi || true
     - sudo mv usr/lib/python3/dist-packages/gi/overrides/* /usr/local/lib/python3.7/dist-packages/gi/overrides/
     - wget http://apt.mopidy.com/pool/main/m/mopidy/mopidy_3.0.2-1_all.deb
     - sudo dpkg -i mopidy_3.0.2-1_all.deb
