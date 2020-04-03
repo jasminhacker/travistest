@@ -22,8 +22,7 @@ before_install:
     - sudo mv usr/lib/python3/dist-packages/gi/overrides/* /usr/local/lib/python3.7/dist-packages/gi/overrides/
     - wget http://apt.mopidy.com/pool/main/m/mopidy/mopidy_3.0.2-1_all.deb
     - sudo dpkg -i mopidy_3.0.2-1_all.deb || true
-    - sudo apt install --fix-broken
-    - sudo dpkg -i mopidy_3.0.2-1_all.deb
+    - sudo apt-get -f install
     - sudo sed -i 's/python3/python3.7/' /usr/bin/mopidy
     - sudo apt autoremove libcairo2-dev libffi-dev libgirepository1.0-dev libglib2.0-dev
 
