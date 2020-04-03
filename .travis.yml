@@ -15,11 +15,11 @@ before_install:
     - sudo python3.7 -m pip install --ignore-installed mopidy
     - sudo apt install -y libcairo2-dev libffi-dev libgirepository1.0-dev libglib2.0-dev python3.7-dev
     - sudo python3.7 -m pip install --ignore-installed --no-cache pygobject
-    - wget http://archive.ubuntu.com/ubuntu/pool/universe/g/gst-python1.0/python3-gst-1.0_1.14.4-1_amd64.deb
+    - wget http://archive.ubuntu.com/ubuntu/pool/universe/g/gst-python1.0/python3-gst-1.0_1.16.1-1_amd64.deb
     - ar x python3-gst-1.0_1.14.4-1_amd64.deb
     - tar -pxvf data.tar.xz
     - sudo mv usr/lib/python3/dist-packages/gi/overrides/* /usr/local/lib/python3.7/dist-packages/gi/overrides/
-    - wget https://apt.mopidy.com/dists/buster/main/binary-amd64/mopidy_3.0.1-2_all.deb
+    - wget http://apt.mopidy.com/pool/main/m/mopidy/mopidy_3.0.2-1_all.deb
     - sudo dpkg -i mopidy_3.0.1-2_all.deb
     - sudo apt install --fix-broken
     - sudo dpkg -i mopidy_3.0.1-2_all.deb
