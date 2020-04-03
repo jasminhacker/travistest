@@ -8,9 +8,11 @@ before_install:
     - sudo add-apt-repository universe
     - sudo apt update
     - sudo apt install -y python3.7
-    - sudo apt install -y build-essential python3-dev python3-pip
+    - sudo apt install -y build-essential python3-dev python3-pip 
+    - sudo apt install -y python3-setuptools # added by myself
+    - sudo apt-get install --reinstall python3-apt # added by myself
     - sudo apt install python3-gst-1.0 gir1.2-gstreamer-1.0 gir1.2-gst-plugins-base-1.0 gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly gstreamer1.0-tools
-    #- sudo python3.7 -m pip install --ignore-installed mopidy
+    - sudo python3.7 -m pip install --ignore-installed mopidy
     - sudo apt install -y libcairo2-dev libffi-dev libgirepository1.0-dev libglib2.0-dev python3.7-dev
     - sudo python3.7 -m pip install --ignore-installed --no-cache pygobject
     - wget http://archive.ubuntu.com/ubuntu/pool/universe/g/gst-python1.0/python3-gst-1.0_1.14.4-1_amd64.deb
