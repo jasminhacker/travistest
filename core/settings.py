@@ -586,6 +586,9 @@ class Settings:
                 )
                 files_added += 1
                 song_index += 1
+
+        print(f'all songs after creating: {ArchivedSong.objects.all()}')
+        print(f'all playlists after creating: {ArchivedPlaylist.objects.all()}')
         self.scan_progress = f'{local_files} / {files_processed} / {files_added}'
         self.update_state()
 

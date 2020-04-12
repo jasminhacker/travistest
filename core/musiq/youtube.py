@@ -259,6 +259,8 @@ class YoutubePlaylistProvider(PlaylistProvider):
             initial_data['contents']['twoColumnSearchResultsRenderer']['primaryContents'][
                 'sectionListRenderer']['contents'][0]['itemSectionRenderer']['contents']
 
+        print(f"searched playlist id for query {self.query} with agent {headers['User-Agent']} and got data {initial_data}")
+
         list_id = next(res['playlistRenderer']['playlistId'] for res in search_results if
                        'playlistRenderer' in res)
         return list_id
