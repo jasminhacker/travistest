@@ -520,7 +520,6 @@ class Settings:
         self.scan_progress = f'{filecount} / {files_scanned} / {files_added}'
         self.update_state()
 
-        print(f'scanned {self.scan_progress}')
         self.base.logger.info(f'done scanning in {library_path}')
     @option
     def create_playlists(self, request):
@@ -591,10 +590,7 @@ class Settings:
                 files_added += 1
                 song_index += 1
 
-        print(f'all songs after creating: {ArchivedSong.objects.all()}')
-        print(f'all playlists after creating: {ArchivedPlaylist.objects.all()}')
         self.scan_progress = f'{local_files} / {files_processed} / {files_added}'
-        print(f'scan_progress after creating: {self.scan_progress}')
         self.update_state()
 
         self.base.logger.info(f'finished creating playlists in {library_path}')

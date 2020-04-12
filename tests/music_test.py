@@ -19,10 +19,6 @@ class MusicTest(TransactionTestCase):
         self.client = Client()
         util.admin_login(self.client)
 
-        print('set up')
-        print(f'Current songs: {CurrentSong.objects.all()}')
-        print(f'Current Queue: {QueuedSong.objects.all()}')
-
         # reduce number of downloaded songs for the test
         self.client.post(reverse('set_max_playlist_items'), {'value': '5'})
 
@@ -40,9 +36,7 @@ class MusicTest(TransactionTestCase):
         self._poll_musiq_state(lambda state: len(state['song_queue']) == 0)
         self.client.post(reverse('skip_song'))
         self._poll_musiq_state(lambda state: not state['current_song'])
-        print('teared down')
-        print(f'Current songs: {CurrentSong.objects.all()}')
-        print(f'Current Queue: {QueuedSong.objects.all()}')
+
         self.client.post(reverse('stop_player_loop'))
 
     def _setup_test_library(self):
@@ -54,8 +48,6 @@ class MusicTest(TransactionTestCase):
         self._poll_state('settings_state', lambda state: ' '.join(state['scan_progress'].split()).startswith('6 / 6 / '))
         self.client.post(reverse('create_playlists'))
         self._poll_state('settings_state', lambda state: ' '.join(state['scan_progress'].split()).startswith('6 / 6 / '))
-        print(f'all songs: {ArchivedSong.objects.all()}')
-        print(f'all playlists: {ArchivedPlaylist.objects.all()}')
 
     def _poll_state(self, state_url, break_condition, timeout=1):
         timeout *= 10
