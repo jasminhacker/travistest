@@ -233,6 +233,7 @@ class YoutubePlaylistProvider(PlaylistProvider):
         return self.id.startswith('RD')
 
     def search_id(self):
+        print(f'searching playlist id for query {self.query}')
         session = requests.session()
         try:
             with open(os.path.join(settings.BASE_DIR, 'config/youtube_cookies.pickle'), 'rb') as f:
@@ -267,6 +268,7 @@ class YoutubePlaylistProvider(PlaylistProvider):
         if self.is_radio():
             self.ydl_opts['playlistend'] = self.musiq.base.settings.max_playlist_items
 
+        print(f'fetching metadata for id {self.id}')
         with youtube_dl.YoutubeDL(self.ydl_opts) as ydl:
             info_dict = ydl.extract_info(self.id, download=False)
 

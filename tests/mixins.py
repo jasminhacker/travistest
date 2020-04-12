@@ -9,6 +9,7 @@ from django.urls import reverse
 
 from tests import util
 
+from core.models import ArchivedSong, ArchivedPlaylist
 
 class ConnectionHandlerMixin:
     @classmethod
@@ -56,6 +57,8 @@ class MusicTestMixin:
         self._poll_state('settings_state', lambda state: ' '.join(state['scan_progress'].split()).startswith('6 / 6 / '))
         self.client.post(reverse('create_playlists'))
         self._poll_state('settings_state', lambda state: ' '.join(state['scan_progress'].split()).startswith('6 / 6 / '))
+        print(f'all songs: {ArchivedSong.objects.all()}')
+        print(f'all playlists: {ArchivedPlaylist.objects.all()}')
 
     def _poll_state(self, state_url, break_condition, timeout=1):
         timeout *= 10
