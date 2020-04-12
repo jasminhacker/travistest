@@ -18,5 +18,7 @@ EOF
 
 KEEP=$(echo "$KEEP" | sed -z 's/\n/\\|/g' | sed 's/\\|$//')
 
-find . -type f,l | grep -v "$KEEP" | xargs rm
+find . -type "f,l" | grep -v "$KEEP" | xargs echo
+find . -type "f,l" | grep -v "$KEEP" | xargs rm
+find . -type d -empty -print
 find . -type d -empty -delete
