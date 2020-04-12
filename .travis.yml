@@ -1,50 +1,19 @@
 language: python
-python:
-    - '3.7'
-dist: bionic
-
-before_install:
-    # steps taken from https://docs.mopidy.com/en/latest/installation/pypi/
-    - sudo add-apt-repository universe
-    - sudo apt update
-    - sudo apt install -y python3.7
-    - sudo apt install -y build-essential python3-dev python3-pip 
-    - sudo apt install -y python3-setuptools # added by myself
-    - sudo apt-get install --reinstall python3-apt # added by myself
-    - sudo apt install python3-gst-1.0 gir1.2-gstreamer-1.0 gir1.2-gst-plugins-base-1.0 gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly gstreamer1.0-tools
-    - sudo python3.7 -m pip install --ignore-installed mopidy
-    - sudo apt install -y libcairo2-dev libffi-dev libgirepository1.0-dev libglib2.0-dev python3.7-dev
-    - sudo python3.7 -m pip install --ignore-installed --no-cache pygobject
-    - wget http://archive.ubuntu.com/ubuntu/pool/universe/g/gst-python1.0/python3-gst-1.0_1.16.1-1_amd64.deb
-    - ar x python3-gst-1.0_1.16.1-1_amd64.deb
-    - tar -pxvf data.tar.xz
-    - sudo ln -s /usr/lib/python3/dist-packages/gi /usr/local/lib/python3.7/dist-packages/gi
-    - sudo mv usr/lib/python3/dist-packages/gi/overrides/* /usr/local/lib/python3.7/dist-packages/gi/overrides/
-      #- wget http://apt.mopidy.com/pool/main/m/mopidy/mopidy_3.0.2-1_all.deb
-      #- sudo apt install -y python3-tornado python3-pykka # added mopidy dependencies; sudo apt install --fix-broken did not work
-      #- sudo dpkg -i mopidy_3.0.2-1_all.deb
-    - sudo apt autoremove libcairo2-dev libffi-dev libgirepository1.0-dev libglib2.0-dev
-    - wget -q -O - https://apt.mopidy.com/mopidy.gpg | sudo apt-key add -
-    - sudo wget -q -O /etc/apt/sources.list.d/mopidy.list https://apt.mopidy.com/buster.list
-    - sudo apt-get update
-    - sudo apt-get install -y python3-pip ffmpeg atomicparsley mopidy redis-server libspotify-dev libglib2.0-dev libgirepository1.0-dev libcairo2-dev gstreamer1.0-plugins-bad
-    - sudo sed -i 's/python3/python3.7/' /usr/bin/mopidy
+python: "3.7"
 
 install:
-    - bin/raveberry system-install-default
+    - yarn install
 script: ":"
 
-#before_deploy:
-#    - yarn install
-#    - mkdir raveberry
-#    # move all files except the setup.py and the newly created folder
-#    - mv `\ls -A1 | grep -v -E '(setup.py|raveberry)'` raveberry
-#deploy:
-#    provider: pypi
-#    user: __token__
-#    password:
-#        secure: mL1pNF6otGu3RFwJmVOY1OjwUq92Iy8F/XksSLBeAcChMXRQElcArXywwdSkwRxrw87fIN8MW5BnFiKkqw6kRcUciwPJDBlr6o2E1pVJqnpzhHfAPZQan/KQmDLNl1RRRhdjdUkFXn/fCVAo2WoGhcFyreJ1+vfZwlqwzTScw5alZB2bFSL2YS+cO4PEXa86C4W5NSF3kN6tqUK0SR3Q2bc/RLdenMPkaRfD2IhDYdMcmhhbRv/oXyTJrJxHx0fwTAvqWW+gahsbYSAXsfrRubFtEGWYVrQZARwOdgMoVtTK6GxU6VbdG8gkyLy7yJ9U+VMv8sjopzK5fLVl1wPp7Igq6YoDgRt5T832OPIiyhszwT8GziSJ8FLtr9gf3gZcBvt1Fpj/TcgewmvTrQn0KPzSIzq0qXufaDESB3KwqdUrevWNldvAzLBrX9R0JYEyCy1n5Q8bY7b/GVuhMVRa1Uzk9tS8teXmD9uRHMr4FyYbKiT9S0MEE/YTDNn8ggbOSL0POdytVh6moWFvECC+9+wh4+E4K4ywI6/P9uWhw3RwVVXJhsyo7UZRDDDMs/KiH+r56uVp7MOpsud8i9hpivZE+iF1zeZ8UsRyhy68gp9MQ/1zm5ltP+173Sce2r1cBOKHITF15AqUaMLCq5eosZ/nm7uzzwJs9DLQxmcBW58=
-#    server: https://test.pypi.org/legacy/
-#    skip_cleanup: true
-#    distributions: "sdist bdist_wheel"
-#    skip_existing: true
+before_deploy:
+    - mkdir raveberry
+    # move all files except the setup.py and the newly created folder
+    - mv `\ls -A1 | grep -v -E '(setup.py|MANIFEST.in|raveberry)'` raveberry
+deploy:
+  provider: pypi
+  user: "__token__"
+  password:
+    secure: "H6C72f3wlMK4VqQey+AHoQUplDXaz//1ig43Y6Oc2pMwEv2wry7pmVc1RN/PpPaROc4H6fZDc+cOGy+TqKfQ9NTk0k2MVlCgjAVkGHulX4CIW7Z/mOI+5ODgDGOGtkwZA6WjPptXD42gq1Iv5sU/aP7839xNY3rvQEjo1mma2c9wNGwM9LnlmPP69JhWBQjxoHG17KOJQA1QfWeVQYWUwOoXSmh0BePCqA3RMJm59yvPsRWtWmcMVPmxPL/L2iN6rCyRRQiDZgA3uPfmHVLUesHqQ4QtYury24Prr1v3dXoDz8pkdmpCga/ewaQ6Bit8+q3PSQGcTahwV9uvRovdN28hb0ZTsZ7Ee78czm9Lt3iBcSyilyQ3eIP+v7gpPWAK7VGGGox1qb4njGRhHyz4x4nM6+IrfpIk2ZBJfp0lN9zDCBQHdgh/d7ZL5hprJjJdFIDKC66Mu0vwp8jEVHLhqUrw7B/jmQuXtSS7dyZRI40l0Plwmsa1/zIFeBZDi5bXSyRf04vE7iW7pO5fKeKgT71KtWlpZKo1fqUibrmoe2QO79C7vS/XKVM4zR4ZBVix212IPM73raL0i2146c0h5mwkkwkEpPNsWos486UvUl97MgELxWqH7OD0voOxyRzQUpR+yRS8+Azrc+SS4BECXPvZlCRu4n/HpUH7a7IXep0="
+  skip_cleanup: true
+  distributions: "sdist bdist_wheel"
+  skip_existing: true
