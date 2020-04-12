@@ -452,14 +452,14 @@ class Settings:
             return HttpResponseBadRequest('not a directory')
         library_path = os.path.abspath(library_path)
 
+        self.scan_progress = '0 / 0 / 0'
+        self.update_state()
+
         self._scan_library(library_path)
 
         return HttpResponse(f'started scanning in {library_path}. This could take a while')
     @background_thread
     def _scan_library(self, library_path):
-        self.scan_progress = '0 / 0 / 0'
-        self.update_state()
-
         scan_start = time.time()
         last_update = scan_start
         update_frequency = 0.5
@@ -520,12 +520,16 @@ class Settings:
         self.scan_progress = f'{filecount} / {files_scanned} / {files_added}'
         self.update_state()
 
+        print(f'scanned {self.scan_progress}')
         self.base.logger.info(f'done scanning in {library_path}')
     @option
     def create_playlists(self, request):
         library_link = os.path.join(settings.SONGS_CACHE_DIR, 'local_library')
         if not os.path.islink(library_link):
             return HttpResponseBadRequest('No library set')
+
+        self.scan_progress = f'0 / 0 / 0'
+        self.update_state()
 
         self._create_playlists()
 
@@ -590,6 +594,7 @@ class Settings:
         print(f'all songs after creating: {ArchivedSong.objects.all()}')
         print(f'all playlists after creating: {ArchivedPlaylist.objects.all()}')
         self.scan_progress = f'{local_files} / {files_processed} / {files_added}'
+        print(f'scan_progress after creating: {self.scan_progress}')
         self.update_state()
 
         self.base.logger.info(f'finished creating playlists in {library_path}')

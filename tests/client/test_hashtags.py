@@ -1,4 +1,4 @@
-from django.test import TransactionTestCase
+from django.test import TransactionTestCase, TestCase
 from django.test import Client
 from django.urls import reverse
 
@@ -6,12 +6,10 @@ from core.models import Tag
 
 from bs4 import BeautifulSoup
 
-from tests.mixins import ConnectionHandlerMixin
-
 
 # Due to python's resolution order, the ConnectionHandlerMixin needs to come first,
 # so its setUpClass is being used
-class HashtagTests(ConnectionHandlerMixin, TransactionTestCase):
+class HashtagTests(TestCase):
 
     def setUp(self):
         self.client = Client()

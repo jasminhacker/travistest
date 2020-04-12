@@ -2,16 +2,18 @@ import json
 import os
 import random
 
+import django
 from django.conf import settings
-from django.test import TransactionTestCase
+from django.test import TestCase, TransactionTestCase
 from django.test import Client
 from django.urls import reverse
 
+from core.models import QueuedSong, CurrentSong
 from tests import util
-from tests.mixins import ConnectionHandlerMixin, MusicTestMixin
+from tests.music_test import MusicTest
 
 
-class QueueTests(ConnectionHandlerMixin, MusicTestMixin, TransactionTestCase):
+class QueueTests(MusicTest):
 
     def setUp(self):
         super().setUp()
@@ -85,7 +87,7 @@ class QueueTests(ConnectionHandlerMixin, MusicTestMixin, TransactionTestCase):
         self.client.post(reverse('remove_all'))
         self._poll_musiq_state(lambda state: len(state['song_queue']) == 0)
 
-class QueueVotingTests(ConnectionHandlerMixin, MusicTestMixin, TransactionTestCase):
+class QueueVotingTests(MusicTest):
     def setUp(self):
         super().setUp()
         self._setup_test_library()

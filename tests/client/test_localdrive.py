@@ -9,10 +9,10 @@ from django.test import TransactionTestCase, Client
 from django.urls import reverse
 
 from tests import util
-from tests.mixins import ConnectionHandlerMixin, MusicTestMixin
+from tests.music_test import MusicTest
 
 
-class LocaldriveTests(ConnectionHandlerMixin, MusicTestMixin, TransactionTestCase):
+class LocaldriveTests(MusicTest):
 
     def setUp(self):
         super().setUp()

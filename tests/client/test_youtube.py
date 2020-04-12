@@ -11,10 +11,10 @@ import json
 import time
 
 from tests import util
-from tests.mixins import ConnectionHandlerMixin, MusicTestMixin
+from tests.music_test import MusicTest
 
 
-class YoutubeTests(ConnectionHandlerMixin, MusicTestMixin, TransactionTestCase):
+class YoutubeTests(MusicTest):
 
     def setUp(self):
         super().setUp()
