@@ -22,6 +22,8 @@ from urllib.parse import parse_qs
 from core.models import ArchivedSong, ArchivedPlaylist, PlaylistEntry, ArchivedPlaylistQuery, \
     RequestLog
 from core.musiq.music_provider import SongProvider, PlaylistProvider
+from core.util import background_thread
+
 
 class MyLogger(object):
     def debug(self, msg):
@@ -113,6 +115,7 @@ class YoutubeSongProvider(SongProvider):
             return False
         return True
 
+    @background_thread
     def _download(self, ip, archive, manually_requested):
         error = None
         location = None
@@ -150,8 +153,7 @@ class YoutubeSongProvider(SongProvider):
         if os.path.isfile(self.get_path()):
             self.enqueue(ip, archive=archive, manually_requested=manually_requested)
         else:
-            thread = threading.Thread(target=self._download, args=(ip, archive, manually_requested), daemon=True)
-            thread.start()
+            thread = self._download(ip, archive, manually_requested)
             if not background:
                 thread.join()
         return True

@@ -49,7 +49,7 @@ Mopidy 3.0 requires Python 3.7, while Ubuntu 18.04 ships with Python 3.6. It is 
 Updating an existing installation is easy. Just update the PyPi package and rerun the system installation.
 ```
 pip3 install -U raveberry
-raveberry run
+raveberry system-install
 ```
 Your database will be preserved, unless you specify a database backup in your config file.
 
@@ -119,6 +119,12 @@ To remove files created during the setup run
 ```
 sudo scripts/uninstall.sh
 ```
+
+## FAQ
+
+### There is an error during installation while `building wheel for cryptography`.
+
+You are probably missing some build dependencies on your system. This has been reported to happen on the Raspberry Pi Zero. Install them using `sudo apt-get install build-essential libssl-dev libffi-dev python-dev`.
 
 ## More Information
 
