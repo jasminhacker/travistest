@@ -3,7 +3,7 @@ import os
 import random
 
 from django.conf import settings
-from django.test import TestCase, TransactionTestCase
+from django.test import TransactionTestCase
 from django.test import Client
 from django.urls import reverse
 
