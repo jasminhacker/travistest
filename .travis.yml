@@ -4,19 +4,12 @@ python: "3.7"
 install: ":"
 script: ":"
 
-before_deploy:
-    - yarn install
-    - ls static/*
-    - scripts/clean_libs.sh
-    - ls static/*
-    - mkdir raveberry
-    # move all files except those needed for packaging
-    - mv `\ls -A1 | grep -v -E '(setup.py|MANIFEST.in|raveberry)'` raveberry
 deploy:
   provider: pypi
-  user: "__token__"
+  user: __token__
   password:
-    secure: "H6C72f3wlMK4VqQey+AHoQUplDXaz//1ig43Y6Oc2pMwEv2wry7pmVc1RN/PpPaROc4H6fZDc+cOGy+TqKfQ9NTk0k2MVlCgjAVkGHulX4CIW7Z/mOI+5ODgDGOGtkwZA6WjPptXD42gq1Iv5sU/aP7839xNY3rvQEjo1mma2c9wNGwM9LnlmPP69JhWBQjxoHG17KOJQA1QfWeVQYWUwOoXSmh0BePCqA3RMJm59yvPsRWtWmcMVPmxPL/L2iN6rCyRRQiDZgA3uPfmHVLUesHqQ4QtYury24Prr1v3dXoDz8pkdmpCga/ewaQ6Bit8+q3PSQGcTahwV9uvRovdN28hb0ZTsZ7Ee78czm9Lt3iBcSyilyQ3eIP+v7gpPWAK7VGGGox1qb4njGRhHyz4x4nM6+IrfpIk2ZBJfp0lN9zDCBQHdgh/d7ZL5hprJjJdFIDKC66Mu0vwp8jEVHLhqUrw7B/jmQuXtSS7dyZRI40l0Plwmsa1/zIFeBZDi5bXSyRf04vE7iW7pO5fKeKgT71KtWlpZKo1fqUibrmoe2QO79C7vS/XKVM4zR4ZBVix212IPM73raL0i2146c0h5mwkkwkEpPNsWos486UvUl97MgELxWqH7OD0voOxyRzQUpR+yRS8+Azrc+SS4BECXPvZlCRu4n/HpUH7a7IXep0="
+    secure: "bEE8Mz4vBonYb18Zzntmys6zpVd5z7sRUYf9dAP+vwwXO92GhLdsI8JIVtgdxPynBLTf3N9NtGkOodYaMixLzNZRRbKTsROosXI55zWUBHl8hSBWnPzoRQGO7xg/HgW9fh0mNPmLGLUAbKieRpsO1Ala6E9LC8yQ/Ax+nNajddPjQE1omEe3qNXjHdsykviBKLisHuWnIJpgpdVf1g60u4U24JGfYtu25t6SBBIxAWZWkKFNw7Gya3pu9ttrdiAtU0+SsMOGmde7wVO1ff6+NyhlJVb3fWhYdzl7CzY5IgE+s9DQL3mV+NSmaqcTtAqmBjf7RyQoF34mteTnvpp9qZEncqdjhovcDfqEJ2KFNQ5M3lQhcrIA57t4XifuuxVxvI+nZpTBwVRaUjZzBtF0VI7j6YxK4AOS8OlXG4enoPT0TXJGqCCiu6INiCG3cFrRGUH4i6mfjcDe36hU1K5/OWL2MzXhbqf84hzFzh2XZC8m9/DWxrI73z2Tzb7el+tTSDlma5uZUD25QvtzZIylIcB8frNHbveeHtqItQerintZyPDnNaP5WAk0V4ximE2Mfwf6yR31/SJBKmEV067rByuDqLf0DdrxV1M3VqoLLoCHT3Nh07bhqUZXrfPdC77pAP5yEjeJRjFgdhCHKute2NT48+kPDwwzTNAJ8c2xF9g="
+  skip_existing: true
   skip_cleanup: true
   distributions: "sdist bdist_wheel"
-  skip_existing: true
+  server: https://test.pypi.org/legacy/
