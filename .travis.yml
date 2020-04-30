@@ -33,8 +33,7 @@ script:
   - echo $DOCKER_VERSION
   - echo $PYPI_VERSION
   # stop the build here if they are equal to skip unnecessary builds
-  - bash -c '[ "$DOCKER_VERSION" == "$PYPI_VERSION" ] && exit 0'
-  - exit 0
+  - if [ "$DOCKER_VERSION" == "$PYPI_VERSION" ]; then exit 0; fi
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   # https://stackoverflow.com/questions/59365141/pushing-images-to-docker-hub-for-multiple-architectures-e-g-amd64-arm64-and
   - docker buildx create --driver docker-container --name local --use unix:///var/run/docker.sock
