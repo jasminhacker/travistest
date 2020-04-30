@@ -23,14 +23,11 @@ before_install:
 
 
 install:
-  - docker version
   - export DOCKER_CLI_EXPERIMENTAL=enabled
-  - docker version
   - sudo systemctl restart docker
 script:
+  - exit 0
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-  - ls /proc/sys/fs/binfmt_misc/
-  - cat /proc/sys/fs/binfmt_misc/*
   # https://stackoverflow.com/questions/59365141/pushing-images-to-docker-hub-for-multiple-architectures-e-g-amd64-arm64-and
   - docker buildx create --driver docker-container --name local --use unix:///var/run/docker.sock
   # no quiet mode, pipe to /dev/null to not exceed maximum log length with buildx's fancy output
