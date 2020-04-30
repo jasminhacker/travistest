@@ -26,6 +26,14 @@ install:
   - export DOCKER_CLI_EXPERIMENTAL=enabled
   - sudo systemctl restart docker
 script:
+  # read and trim the version from the latest docker image
+  - DOCKER_VERSION=$(docker pull raveberry/raveberry >/dev/null && docker run -it raveberry/raveberry pip freeze --path /opt | tr -d '[:space:]')
+  # read and trim the version of this folder
+  - PYPI_VERSION="raveberry==$(cat VERSION | tr -d '[:space:]')"
+  - echo $DOCKER_VERSION
+  - echo $PYPI_VERSION
+  # stop the build here if they are equal to skip unnecessary builds
+  - [ "$DOCKER_VERSION" == "$PYPI_VERSION" ] && exit 0
   - exit 0
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   # https://stackoverflow.com/questions/59365141/pushing-images-to-docker-hub-for-multiple-architectures-e-g-amd64-arm64-and
