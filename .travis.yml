@@ -33,4 +33,6 @@ script:
   - cat /proc/sys/fs/binfmt_misc/*
   # https://stackoverflow.com/questions/59365141/pushing-images-to-docker-hub-for-multiple-architectures-e-g-amd64-arm64-and
   - docker buildx create --driver docker-container --name local --use unix:///var/run/docker.sock
-  - docker buildx build --platform linux/amd64,linux/arm/v7 --output type=registry -f docker/Dockerfile -t raveberry/raveberry .
+  # no quiet mode, pipe to /dev/null to not exceed maximum log length with buildx's fancy output
+  # https://github.com/docker/buildx/blob/master/commands/build.go#L79
+  - docker buildx build --platform linux/amd64,linux/arm/v7 --output type=registry -f docker/Dockerfile -t raveberry/raveberry . 2>/dev/null
