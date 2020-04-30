@@ -10,10 +10,8 @@ env:
     - secure: "n2xAJLXA5l+L+6W9FHTjGOrZ6PGiaZot19tt5mT5O3rA0FjxKkqQBze/IeA4OC5hM5B4Sj0xfXqXcTJNz5qzLpM92bXVTbl9mDPfr6zYKpWNFH9c6p1p1HlLn+aiYNT/+S/JjnuXTjLnS3TKDVsB+zATSko4iwlWdMzkZebfADHAYrKoBYiUzcXKanxVdoi18ntSiiMsriPGjPsaq0pOhJ/psjKV6jWCOZTUghoGX8bv3y1N1kZGuly2m9HIAFQYpVx+59IWAoAsUn64KKh9zh67euC9tS+GgJ6JOIh9v9VJMpCjCQbSJ9ZQh7OZ7rR0SQJ4NS8zQFRQcJvxo18QcqEjnP+XTA0xIPhW6NBTQ9n01qR5j3rWssl42bZwk7uqkCYkR17uKLQHqifgA/bfjbQ6HOX0Wd0wXhUxD4doPAF/7GwsiF3QRg5Y3Hpuozxqc38mPR3wujeprPg4Wz0MTivgs4CvcgkRjOxhdo6L3T7MyUwGgYcHfIQKJMW7B16RxsK3+QZFvUMmB94ZfNjAZ3cHamvwLKvMvu5G7It39F1oFPTnNr+823Zs/a+2CkotqlTH/yXwnRNkGFzgEyXoAmpdAcfUqWIwV0IXHBWl5irp05Yn0F9GqEvBKKLyRBUs2g4f63M3E043QXVLmHm5PM98dQA3wx7XeGwor8vEyfI="
 
 install:
-  #- docker build -f docker/tests.Dockerfile -t raveberry-test .
-  #
-  - echo '{"experimental": true}' > /etc/docker/daemon.json
-  - systemctl restart docker
+  - echo $'{\n    "experimental": true\n}' | sudo tee /etc/docker/daemon.json
+  - sudo systemctl restart docker
 script:
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   - docker buildx create --driver docker-container --name local --use unix:///var/run/docker.sock
