@@ -15,6 +15,12 @@ before_install:
   - sudo apt-get update
   - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
   - sudo apt-get -y install qemu-user qemu-user-static
+  # https://github.com/docker/for-linux/issues/56#issuecomment-502263368
+  - git clone https://github.com/computermouth/qemu-static-conf.git
+  - sudo mkdir -p /lib/binfmt.d
+  - sudo cp qemu-static-conf/*.conf /lib/binfmt.d/
+  - sudo systemctl restart systemd-binfmt.service
+
 
 install:
   - docker version
@@ -25,5 +31,6 @@ script:
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   - ls /proc/sys/fs/binfmt_misc/
   - cat /proc/sys/fs/binfmt_misc/*
+  # https://stackoverflow.com/questions/59365141/pushing-images-to-docker-hub-for-multiple-architectures-e-g-amd64-arm64-and
   - docker buildx create --driver docker-container --name local --use unix:///var/run/docker.sock
   - docker buildx build --platform linux/amd64,linux/arm/v7 --output type=registry -f docker/Dockerfile -t raveberry/raveberry .
