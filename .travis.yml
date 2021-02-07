@@ -3,10 +3,11 @@ python: "3.7"
 
 install:
   - nvm install --lts
+  - yarn install
   - sudo apt-get install build-essential libssl-dev libffi-dev python3-dev rustc cargo
   - pip install django
 
 script:
   - python -m django version
   - python3 -m django version
-  - node test.js
+  - yarn test
