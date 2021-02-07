@@ -3,7 +3,8 @@ python: "3.7"
 
 install:
   - sudo apt-get install build-essential libssl-dev libffi-dev python3-dev rustc cargo
-  - pip install cryptography
+  - pip install django
 
 script:
-  - python --version
+  - python -m django version
+  - python3 -m django version
