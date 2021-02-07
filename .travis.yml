@@ -1,8 +1,9 @@
 language: python
 python: "3.7"
 
-before_install:
-  - nvm install --lts
+install:
+  - sudo apt-get install build-essential libssl-dev libffi-dev python3-dev rustc cargo
+  - pip install cryptography
 
 script:
-  - node --version
+  - python --version
