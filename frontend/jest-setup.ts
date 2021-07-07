@@ -2,6 +2,8 @@ import '@testing-library/jest-dom';
 import * as fs from 'fs';
 import * as child from 'child_process';
 
+declare const global: any;
+
 // add jQuery to the global scope so libraries depending on it can be loaded
 import * as $ from 'jquery';
 global['$'] = global['jQuery'] = $;
