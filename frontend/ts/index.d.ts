@@ -5,6 +5,8 @@ declare let VOTING_SYSTEM: boolean;
 declare let ADMIN: boolean;
 declare let CONTROLS_ENABLED: boolean;
 
+declare const global: any;
+
 declare let ADDITIONAL_KEYWORDS: string;
 declare let FORBIDDEN_KEYWORDS: string;
 declare let DYNAMIC_EMBEDDED_STREAM: boolean;
