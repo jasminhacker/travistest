@@ -8,7 +8,7 @@ install:
   - yarn --cwd frontend install
 
 before_script:
-  - yarn --cwd frontend build
+  - yarn --cwd frontend js
 
 script:
   - yarn --cwd frontend test
