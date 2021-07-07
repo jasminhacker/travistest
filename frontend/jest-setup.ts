@@ -14,6 +14,9 @@ global['VOTING_SYSTEM'] = false;
 global['ADMIN'] = false;
 global['CONTROLS_ENABLED'] = false;
 
+global['ADDITIONAL_KEYWORDS'] = '';
+global['FORBIDDEN_KEYWORDS'] = '';
+
 // create the css file if necessary
 try {
   fs.statSync('../static/dark.css');
