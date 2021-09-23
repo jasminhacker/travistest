@@ -70,9 +70,7 @@ jobs:
           sudo apt-get -y install
           ffmpeg
           gstreamer1.0-plugins-bad
-          #postgresql-client
-          libpq-dev
-          net-tools
+          #libpq-dev
       - run: netstat -tulpn
       - name: Prepare database
         run: |
