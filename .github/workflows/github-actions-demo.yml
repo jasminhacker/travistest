@@ -50,5 +50,5 @@ jobs:
           mopidy -o "audio/output=fakesink sync=true" &
           # wait for mopidy so it can handle connections
           sleep 5
-      - python manage.py test
+      - run: python manage.py test
 
