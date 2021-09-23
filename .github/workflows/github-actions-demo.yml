@@ -76,9 +76,9 @@ jobs:
       - run: netstat -tulpn
       - name: Prepare database
         run: |
-          psql -h localhost -U postgres -c "CREATE USER raveberry WITH PASSWORD 'raveberry';"
-          psql -h localhost  postgres -c "CREATE DATABASE raveberry;"
-          psql -h localhost  postgres -c "ALTER USER raveberry CREATEDB;"
+          sudo -u postgres psql -h localhost -c "CREATE USER raveberry WITH PASSWORD 'raveberry';"
+          sudo -u postgres psql -h localhost -c "CREATE DATABASE raveberry;"
+          sudo -u postgres psql -h localhost -c "ALTER USER raveberry CREATEDB;"
           python manage.py migrate
           python manage.py installwatson
           python manage.py buildwatson
