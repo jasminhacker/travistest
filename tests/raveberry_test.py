@@ -21,6 +21,10 @@ class RaveberryTest(TransactionTestCase):
         cls.celery_worker = start_worker(app, perform_ping_check=False)
         cls.celery_worker.__enter__()
 
+        import logging
+
+        logging.getLogger().setLevel(logging.INFO)
+
     @classmethod
     def tearDownClass(cls):
         super().tearDownClass()

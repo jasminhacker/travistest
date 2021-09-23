@@ -67,8 +67,6 @@ jobs:
           pip install -U pip
           pip install -r requirements/ci.txt
       - run: sudo apt-get -y install ffmpeg
-      - run: docker ps
-      - run: docker ps -q | xargs -L 1 docker logs
       - name: Prepare database
         run: |
           python manage.py migrate
