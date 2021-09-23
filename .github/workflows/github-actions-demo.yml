@@ -24,7 +24,7 @@ jobs:
       - run: yarn --cwd frontend install
       - run: yarn --cwd frontend build
       - run: yarn --cwd frontend test
-  test-frontend:
+  test-backend:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
