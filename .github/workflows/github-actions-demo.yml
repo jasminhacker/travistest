@@ -29,23 +29,25 @@ jobs:
       # from https://docs.github.com/en/actions/using-containerized-services/creating-postgresql-service-containers
       postgres:
         image: postgres
-        ports:
-          - 5432:5432
+        env:
+          POSTGRES_PASSWORD: postgres
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        ports:
+          - 5432:5432
       # from https://docs.github.com/en/actions/using-containerized-services/creating-redis-service-containers
       redis:
         image: redis
-        ports:
-          - 6379:6379
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        ports:
+          - 6379:6379
       mopidy:
         image: raveberry/raveberry-mopidy
         env:
