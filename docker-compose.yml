@@ -1,0 +1,86 @@
+version: '3'
+
+volumes:
+  songs-cache:
+    # If you want to access downloaded files on your host system,
+    # uncomment the following lines and choose a folder.
+    # Make sure the folder is writable by UID 33 (eg chmod -R o+rw folder)
+    #driver_opts:
+    #  type: 'none'
+    #  o: 'bind'
+    #  device: '/path/to/folder/'
+services:
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_DB=raveberry
+      - POSTGRES_USER=raveberry
+      - POSTGRES_PASSWORD=raveberry
+    # Use this if you want to persist raveberry's database data
+    #volumes:
+    #  - /path/to/data/:/var/lib/postgresql/data
+    restart: always
+  redis:
+    image: redis
+    restart: always
+  celery:
+    image: raveberry/raveberry
+    volumes:
+      - songs-cache:/Music/raveberry
+    depends_on:
+      - db
+      - redis
+    environment:
+      - DOCKER=1
+    command: /usr/local/bin/celery -A core worker -O fair -c 6
+    restart: always
+  mopidy:
+    image: raveberry/raveberry-mopidy
+    user: "${UID:-1000}:${GID:-1000}"
+    environment:
+      - SPOTIFY_USERNAME
+      - SPOTIFY_PASSWORD
+      - SPOTIFY_CLIENT_ID
+      - SPOTIFY_CLIENT_SECRET
+      - SOUNDCLOUD_AUTH_TOKEN
+      - JAMENDO_CLIENT_ID
+    volumes:
+      - songs-cache:/Music/raveberry
+      # Comment this line if pulse does not work.
+      - "/run/user/${UID:-1000}/pulse:/run/user/105/pulse"
+      # to customize mopidy config, mount a custom config file with this line
+      # - /path/to/mopidy.conf:/config/mopidy.conf
+    restart: always
+    # Use these three lines to use alsa if pulse is not working.
+    #user: root
+    #devices:
+    #  - "/dev/snd:/dev/snd"
+  daphne:
+    image: raveberry/raveberry
+    expose:
+      - 9000
+    volumes:
+      - songs-cache:/Music/raveberry
+    depends_on:
+      - db
+      - redis
+      - celery
+      - mopidy
+    environment:
+      - ADMIN_PASSWORD
+      - MOD_PASSWORD
+      - SPOTIFY_USERNAME
+      - SPOTIFY_PASSWORD
+      - SPOTIFY_CLIENT_ID
+      - SPOTIFY_CLIENT_SECRET
+      - SOUNDCLOUD_AUTH_TOKEN
+      - JAMENDO_CLIENT_ID
+      - DOCKER=1
+    restart: always
+  nginx:
+    image: raveberry/raveberry-nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - daphne
+    restart: always

@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block js %}
+	urls['state'] = '{% url 'lights-state' %}';
+	urls['lights'] = {
+	{% for path in urls %}
+		'{{ path.name }}': '/ajax/lights/{{ path.pattern }}',
+	{% endfor %}
+	};
+{% endblock %}
+
+{% block content %}
+<ul class="list-group" id="ring-options">
+	<li class="list-group-item list-header">
+		Ring
+	</li>
+	<li class="list-group-item list-item">
+		<span class="description">Program</span>
+		<select class="form-control" id="ring-program">
+			{% for program_name in color_program_names %}
+			<option>{{ program_name }}</option>
+			{% endfor %}
+		</select>
+	</li>
+	<li class="list-group-item list-item">
+		<span class="description">Brightness</span>
+		<input type="range" id="ring-brightness" min="0" max="1" step="0.01">
+	</li>
+	<li class="list-group-item list-item">
+		<span class="description">Monochrome</span>
+		<input type="checkbox" id="ring-monochrome">
+	</li>
+</ul>
+
+<ul class="list-group" id="wled-options">
+    <li class="list-group-item list-header">
+        WLED
+    </li>
+    <li class="list-group-item list-item">
+        <span class="description">LED count</span>
+        <input id="wled-led-count"/>
+    </li>
+    <li class="list-group-item list-item">
+        <span class="description">IP</span>
+        <input id="wled-ip"/>
+    </li>
+    <li class="list-group-item list-item">
+        <span class="description">Port</span>
+        <input id="wled-port"/>
+    </li>
+    <li class="list-group-item list-item">
+        <span class="description">Program</span>
+        <select class="form-control" id="wled-program">
+            {% for program_name in color_program_names %}
+                <option>{{ program_name }}</option>
+            {% endfor %}
+        </select>
+    </li>
+    <li class="list-group-item list-item">
+        <span class="description">Brightness</span>
+        <input type="range" id="wled-brightness" min="0" max="1" step="0.01">
+    </li>
+    <li class="list-group-item list-item">
+        <span class="description">Monochrome</span>
+        <input type="checkbox" id="wled-monochrome">
+    </li>
+</ul>
+
+<ul class="list-group" id="strip-options">
+	<li class="list-group-item list-header">
+		Strip
+	</li>
+	<li class="list-group-item list-item">
+		<span class="description">Program</span>
+		<select class="form-control" id="strip-program">
+			{% for program_name in color_program_names %}
+			<option>{{ program_name }}</option>
+			{% endfor %}
+		</select>
+	</li>
+	<li class="list-group-item list-item">
+		<span class="description">Brightness</span>
+		<input type="range" id="strip-brightness" min="0" max="1" step="0.01">
+	</li>
+</ul>
+
+<ul class="list-group" id="screen-options">
+	<li class="list-group-item list-header">
+		Screen
+		<i class="fas fa-sync" id="adjust-screen"></i>
+	</li>
+	<li class="list-group-item list-item">
+		<span class="description">Program</span>
+		<select class="form-control" id="screen-program">
+			{% for program_name in screen_program_names %}
+			<option>{{ program_name }}</option>
+			{% endfor %}
+		</select>
+	</li>
+</ul>
+
+<ul class="list-group" id="program-options">
+	<li class="list-group-item list-header">
+		Program Options
+	</li>
+	<li class="list-group-item list-item">
+		<span class="description">Rainbow Speed</span>
+		<input type="range" id="program-speed" min="0" max="1" step="0.01">
+	</li>
+	<li class="list-group-item list-item">
+		<span class="description">Fixed Color</span>
+		<input type="color" id="fixed-color">
+	</li>
+</ul>
+{% endblock %}

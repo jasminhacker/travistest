@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block js %}
+    let ADDITIONAL_KEYWORDS = '{{ additional_keywords }}';
+    let FORBIDDEN_KEYWORDS = '{{ forbidden_keywords }}';
+	{% if dynamic_embedded_stream %}
+	let DYNAMIC_EMBEDDED_STREAM = true;
+	{% else %}
+	let DYNAMIC_EMBEDDED_STREAM = false;
+	{% endif %}
+
+    urls['state'] = '{% url 'musiq-state' %}';
+	urls['musiq'] = {
+	{% for path in urls %}
+		'{{ path.name }}': '/ajax/musiq/{{ path.pattern }}',
+	{% endfor %}
+	};
+{% endblock %}
+
+{% block content %}
+<ul class="list-group">
+	<li class="list-group-item" id="music-input-card">
+		<i class="fas fa-stream icon-disabled" id="playlist-mode"{% if voting_enabled and not controls_enabled %} style="display: none"{%endif%}></i>
+		<i class="fas fa-dice" id="random-suggestion"></i>
+		<span class="clearable">
+			<input class="form-control autocomplete" id="music-input" placeholder="Search for Music..." autofocus autocomplete="off">
+			<i class="fas fa-times" id="clearbutton"></i>
+		</span>
+		<div class="anim-container" id="request-button-container">
+			<i class="fas fa-arrow-circle-right other" id="request-archived-music"></i>
+			<i class="fas fa-search default" id="request-new-music"></i>
+		</div>
+	</li>
+</ul>
+<ul class="list-group" id="current-song-card">
+	<li class="list-group-item empty" id="current-song">
+		{% if embed_stream %}
+			<audio>
+			</audio>
+			<i class="fas fa-volume-mute" id="stream-control"></i>
+		{% endif %}
+		<div class="autoscrolling-container" {%if embed_stream%}style="margin-right:32px"{%endif%}><span id="current-song-title">Currently Empty</span></div>
+	</li>
+	<li class="list-group-item" id="progress-bar-container">
+		<div class="progress">
+			<div id="progress-bar" class="progress-bar">
+			</div>
+		</div>
+	</li>
+	<li class="list-group-item" id="song-votes"{% if not voting_enabled or controls_enabled %} style="display: none"{%endif%}>
+		<i class="fas fa-chevron-circle-up vote-up"></i>
+		<span id="current-song-votes"></span>
+		<i class="fas fa-chevron-circle-down vote-down"></i>
+	</li>
+	<li class="list-group-item" id="song-controls"{% if voting_enabled and not controls_enabled %} style="display: none"{%endif%}>
+		<div id="song-control-icons">
+			<i class="fas fa-fast-backward" id="restart-song"></i>
+			<i class="fas fa-backward" id="seek-backward"></i>
+			<div class="anim-container" id="play-button-container">
+				<i class="fas fa-pause other" id="pause"></i>
+				<i class="fas fa-play default" id="play"></i>
+			</div>
+			<i class="fas fa-forward" id="seek-forward"></i>
+			<i class="fas fa-fast-forward" id='skip-song'></i><br/>
+            {% if not voting_enabled %}
+			<i class="fas fa-random icon-disabled" id="set-shuffle"></i>
+            {% endif %}
+			<i class="fas fa-sync icon-disabled" id="set-repeat"></i>
+			<i class="fas fa-play-circle icon-disabled" id="set-autoplay"></i>
+			<i class="fas fa-robot icon-disabled" id="request-radio"></i>
+		</div>
+	</li>
+	<li class="list-group-item" id="additional-controls"{% if voting_enabled and not controls_enabled %} style="display: none"{%endif%}>
+		<div id="total-time-container">
+			<i class="fas fa-clock"></i><span id="total-time">--:--</span>
+		</div>
+		<div id="volume-slider-container">
+			<i id="volume-indicator" class="fas fa-volume-down"></i>
+			<input type="range" id="volume-slider" min="0" max="1" step="0.01" readonly="readonly"/>
+		</div>
+		<div id="queue-controls">
+			{% if is_admin %}
+				<i class="fas fa-random icon-disabled" id="shuffle-all"></i>
+				<i class="fas fa-trash-alt icon-disabled" id="remove-all"></i>
+			{% endif %}
+		</div>
+	</li>
+</ul>
+<ul class="list-group" id="song-queue">
+</ul>
+
+<div id="title-modal" class="modal fade" role="dialog">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-text">
+				Some text in the modal.
+			</div>
+			<a target="_blank" href="" id="external-link">
+				<i class="fas fa-link"></i>
+			</a>
+		</div>
+	</div>
+</div>
+
+{% endblock %}

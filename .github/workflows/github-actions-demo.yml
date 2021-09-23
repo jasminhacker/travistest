@@ -1,17 +1,54 @@
-name: GitHub Actions Demo
-on: [push]
+name: Raveberry Deploy
+on:
+  push:
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
 jobs:
-  Explore-GitHub-Actions:
+  test-frontend:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-      - name: Check out repository code
-        uses: actions/checkout@v2
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-      - name: List files in the repository
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+          architecture: 'x64'
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 'lts/*'
+          cache: 'yarn'
+      - name: Install pip dependencies
         run: |
-          ls ${{ github.workspace }}
-      - run: echo "🍏 This job's status is ${{ job.status }}."
+          pip install -U pip
+          pip install -r requirements/ci.txt
+      - run: yarn --cwd frontend install
+      - run: yarn --cwd frontend build
+      - run: yarn --cwd frontend test
+  test-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+          architecture: 'x64'
+      - name: Install pip dependencies
+        run: |
+          pip install -U pip
+          pip install -r requirements/ci.txt
+      - run: sudo apt-get -y install mopidy ffmpeg gstreamer1.0-plugins-bad
+      - name: Prepare database
+        run: |
+          psql -c "CREATE USER raveberry WITH PASSWORD 'raveberry';"
+          psql -c "CREATE DATABASE raveberry;"
+          psql -c "ALTER USER raveberry CREATEDB;"
+          python manage.py migrate
+          python manage.py installwatson
+          python manage.py buildwatson
+      - name: Start mopidy
+        run: |
+          mopidy -o "audio/output=fakesink sync=true" &
+          # wait for mopidy so it can handle connections
+          sleep 5
+      - python manage.py test
+

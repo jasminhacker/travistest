@@ -1,0 +1,8 @@
+#!/bin/bash
+if [ "$EUID" -ne 0 ]
+then echo "Please run as root"
+	exit
+fi
+
+systemctl stop icecast2
+systemctl is-enabled icecast2 &>/dev/null && systemctl disable icecast2 2>/dev/null

@@ -2,6 +2,8 @@ import '@testing-library/jest-dom';
 import * as fs from 'fs';
 import * as child from 'child_process';
 
+// Explicitly declaring the global object for tests gets rid of this jest error:
+// Property <property> does not exist on type 'typeof globalThis'.
 declare const global: any;
 
 // add jQuery to the global scope so libraries depending on it can be loaded
@@ -10,10 +12,11 @@ global['$'] = global['jQuery'] = $;
 
 global['CSRF_TOKEN'] = '';
 global['urls'] = {};
-global['VOTING_SYSTEM'] = false;
+global['VOTING_ENABLED'] = false;
 global['ADMIN'] = false;
 global['CONTROLS_ENABLED'] = false;
-
+// used in musiq tests
+// needs to set here because it raises typing errors in  the test module
 global['ADDITIONAL_KEYWORDS'] = '';
 global['FORBIDDEN_KEYWORDS'] = '';
 

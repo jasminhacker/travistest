@@ -1,0 +1,283 @@
+#!/usr/bin/env python3
+import getpass
+import os
+import shutil
+import subprocess
+import sys
+import argparse
+import pathlib
+import importlib
+
+import pkg_resources
+
+try:
+    import raveberry
+
+    module_found = True
+    module_raveberry_directory = os.path.dirname(raveberry.__file__)
+except ModuleNotFoundError:
+    module_found = False
+    module_raveberry_directory = None
+
+local_raveberry_directory = str(pathlib.Path(__file__).parent.parent)
+raveberry_directory = None
+module_used = None
+default_config = None
+used_config = None
+
+
+def main():
+    global raveberry_directory, module_used, default_config, used_config
+
+    parser = argparse.ArgumentParser(
+        description="""\
+    A multi-user music server with a focus on participation.
+    For more info visit https://github.com/raveberry/raveberry""",
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    parser.add_argument(
+        "command",
+        help="""\
+    run             run a basic version of raveberry
+    system-install  install raveberry into the system
+    version         print the version of this module
+    help            show this help and exit""",
+    )
+    parser.add_argument(
+        "--config-file",
+        "-c",
+        type=str,
+        help="specify a config file to use for system-install",
+    )
+    parser.add_argument(
+        "--confirm-config",
+        action="store_true",
+        help="do not prompt to confirm the config file",
+    )
+    parser.add_argument(
+        "--local",
+        action="store_true",
+        help="use the local folder even if the module is installed",
+    )
+    args = parser.parse_args()
+
+    if args.local or not module_found:
+        module_used = False
+        raveberry_directory = local_raveberry_directory
+        default_config = os.path.join(
+            local_raveberry_directory, "config/raveberry.yaml"
+        )
+    else:
+        module_used = True
+        raveberry_directory = module_raveberry_directory
+        default_config = os.path.join(
+            module_raveberry_directory, "config/raveberry.yaml"
+        )
+
+    default_config = os.path.abspath(default_config)
+    used_config = default_config
+    if args.config_file:
+        used_config = os.path.abspath(args.config_file)
+
+    os.chdir(raveberry_directory)
+    command = args.command.lstrip("-")
+    choices = ["run", "system-install", "version", "v"]
+    if command not in choices:
+        parser.print_help()
+        sys.exit(1)
+    elif command == "run":
+        run_server()
+    elif command == "system-install":
+        system_install(config_confirmed=args.confirm_config)
+    elif command == "version" or command == "v":
+        version()
+    else:
+        print("unknown command")
+        sys.exit(1)
+
+
+def version():
+    try:
+        print(pkg_resources.require("raveberry")[0].version)
+    except pkg_resources.DistributionNotFound:
+        print("raveberry is currently not installed")
+        sys.exit(1)
+
+
+def run_server():
+    spec = importlib.util.find_spec("django")
+    if spec is None:
+        print("Please install required dependencies:")
+        print("\tpip3 install raveberry[run]")
+        sys.exit(1)
+    if not os.path.isfile("db.sqlite3"):
+        print("first time running raveberry, preparing...")
+        user_install()
+    print("This is the basic raveberry version using a debug server.")
+    print("To install with all features run `raveberry system-install`")
+    mopidy = None
+    celery = None
+    try:
+        subprocess.check_call("pgrep mopidy".split(), stdout=subprocess.DEVNULL)
+    except subprocess.CalledProcessError:
+        print("mopidy not yet running, waiting for it to come up...")
+        mopidy = subprocess.Popen(["mopidy"], stderr=subprocess.PIPE)
+        # wait until mopidy started its server
+        for line in mopidy.stderr:
+            line = line.decode().strip()
+            print(line)
+            if "HTTP server running" in line:
+                break
+    try:
+        subprocess.check_call(
+            ["pgrep", "-f", "celery -A core"], stdout=subprocess.DEVNULL
+        )
+    except subprocess.CalledProcessError:
+        print("celery not yet running, starting...")
+        celery = subprocess.Popen(
+            "python3 manage.py celery".split(),
+            env={"DJANGO_DEBUG": "1", **os.environ},
+            stdin=subprocess.DEVNULL,
+        )
+    try:
+        subprocess.call(
+            "python3 manage.py migrate".split(), env={"DJANGO_DEBUG": "1", **os.environ}
+        )
+        subprocess.call(
+            "python3 manage.py runserver 0:8080".split(),
+            env={"DJANGO_DEBUG": "1", **os.environ},
+        )
+    except KeyboardInterrupt:
+        pass
+    finally:
+        if mopidy:
+            mopidy.terminate()
+        if celery:
+            subprocess.call(["pkill", "-9", "-f", "celery -A core"])
+
+
+def user_install():
+    required_packages = [("ffmpeg", "ffmpeg"), ("mopidy", "mopidy")]
+    missing_packages = []
+    for executable, package_name in required_packages:
+        if not shutil.which(executable):
+            missing_packages.append(package_name)
+    if missing_packages:
+        print(
+            "please install missing packages: sudo apt-get install -y "
+            + " ".join(missing_packages)
+        )
+        sys.exit(1)
+
+    subprocess.call(["/bin/bash", "setup/user_install.sh"])
+
+
+def system_install(config_confirmed=False):
+    global used_config
+    if not shutil.which("ansible-playbook"):
+
+        if config_confirmed:
+            # ansible was not installed but --confirm-config was passed
+            # This is probably the case if raveberry is updated through the webinterface from 0.7.*
+            # In this case, install missing dependencies and migrate the config from .ini to .yaml
+            print("Assuming scripted install, installing missing dependencies...")
+            subprocess.call(["pip3", "install", "-U", "raveberry[install]"])
+
+            if os.path.splitext(used_config)[1] == ".ini":
+                print("migrating old .ini config")
+
+                import configparser
+                import yaml
+
+                config = configparser.ConfigParser()
+                config.read(used_config)
+
+                config_dict = {}
+                for section_name, section in config.items():
+                    for key, value in section.items():
+                        try:
+                            enabled = config.getboolean(section_name, key)
+                            config_dict[key] = enabled
+                        except ValueError:
+                            value = value if value != "" else None
+                            config_dict[key] = value
+
+                yaml_config = os.path.splitext(used_config)[0] + ".yaml"
+                with open(yaml_config, "w") as f:
+                    yaml.dump(config_dict, f)
+                os.remove(used_config)
+                used_config = yaml_config
+
+        else:
+            print("Please install the required dependencies:")
+            print("\tpip3 install raveberry[install]")
+            print("If you already installed them, try adding them to PATH:")
+            print('\texport PATH="$HOME/.local/bin:$PATH"')
+
+            sys.exit(1)
+
+    import yaml
+
+    if not config_confirmed:
+        print(
+            f"""This install will change system files, backups are recommended.
+For advanced features (e.g. Spotify, Visualization, Hotspot) edit the config before continuing.
+    config: {used_config}"""
+        )
+        if not module_used:
+            print("Using folder: " + raveberry_directory)
+
+        answer = input("Continue? [Y/n] ")
+        while answer not in ["", "Y", "y", "Yes", "yes", "N", "n", "No", "no"]:
+            answer = input('Please answers "yes" or "no": ')
+        if answer in ["N", "n", "No", "no"]:
+            sys.exit(0)
+
+    if used_config != default_config:
+        # If the user provided a different config, copy it to the default config's location,
+        # so it is available for upgrades after the install.
+        shutil.copyfile(used_config, default_config)
+
+    with open(used_config) as f:
+        config = yaml.safe_load(f)
+
+    # the sudo in this command allows ansible to become root without entering the password a second time
+    db_exists = not subprocess.call(
+        'sudo -u postgres psql -lqt | cut -d \\| -f 1 | grep -qw "raveberry"',
+        shell=True,
+        stderr=subprocess.DEVNULL,
+    )
+    if config["db_backup"] or db_exists:
+        # another database is already present, do not ask for a new admin password
+        pass
+    else:
+        while True:
+            admin_password = getpass.getpass("Set admin password: ")
+            admin_password_confirmed = getpass.getpass("Confirm admin password: ")
+            if admin_password == admin_password_confirmed:
+                os.environ["ADMIN_PASSWORD"] = admin_password
+                break
+            print("Passwords didn't match")
+    if not subprocess.call(
+        [
+            "ansible-playbook",
+            "-i",
+            "localhost,",
+            "-e",
+            "ansible_python_interpreter=auto",
+            "--connection",
+            "local",
+            "setup/system_install.yaml",
+        ]
+    ):
+        print(
+            """
+    Finished!
+
+    Raveberry was successfully installed.
+    You can now visit http://raveberry.local/"""
+        )
+
+
+if __name__ == "__main__":
+    main()
