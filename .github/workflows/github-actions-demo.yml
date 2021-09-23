@@ -5,26 +5,34 @@ on:
       - 'docs/**'
       - '**.md'
 jobs:
-  test-frontend:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-        with:
-          python-version: '3.7'
-          architecture: 'x64'
-      - uses: actions/setup-node@v2
-        with:
-          node-version: 'lts/*'
-      - name: Install pip dependencies
-        run: |
-          pip install -U pip
-          pip install -r requirements/ci.txt
-      - run: yarn --cwd frontend install
-      - run: yarn --cwd frontend build
-      - run: yarn --cwd frontend test
+  #test-frontend:
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #    - uses: actions/checkout@v2
+  #    - uses: actions/setup-python@v2
+  #      with:
+  #        python-version: '3.7'
+  #        architecture: 'x64'
+  #    - uses: actions/setup-node@v2
+  #      with:
+  #        node-version: 'lts/*'
+  #    - name: Install pip dependencies
+  #      run: |
+  #        pip install -U pip
+  #        pip install -r requirements/ci.txt
+  #    - run: yarn --cwd frontend install
+  #    - run: yarn --cwd frontend build
+  #    - run: yarn --cwd frontend test
   test-backend:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres
+      redis:
+        image: redis
+    env:
+      POSTGRES_HOST: postgres
+      REDIS_HOST: redis
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -40,8 +48,6 @@ jobs:
           mopidy
           ffmpeg
           gstreamer1.0-plugins-bad
-          redis-server
-          postgresql
           libpq-dev
       - name: Prepare database
         run: |
