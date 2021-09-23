@@ -103,11 +103,6 @@ else:
     ICECAST_HOST = "localhost"
     DEFAULT_CACHE_DIR = "~/Music/raveberry/"
     TEST_CACHE_DIR = os.path.join(BASE_DIR, "test_cache/")
-# Environment variables may override these variables
-POSTGRES_HOST = os.environ.get("POSTGRES_HOST", POSTGRES_HOST)
-REDIS_HOST = os.environ.get("REDIS_HOST", REDIS_HOST)
-MOPIDY_HOST = os.environ.get("MOPIDY_HOST", MOPIDY_HOST)
-ICECAST_HOST = os.environ.get("ICECAST_HOST", ICECAST_HOST)
 
 # Database
 if DEBUG:
