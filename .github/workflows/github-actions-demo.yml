@@ -55,8 +55,6 @@ jobs:
         ports:
           - 6680:6680
     env:
-      POSTGRES_HOST: postgres
-      REDIS_HOST: redis
       PGPASSWORD: postgres
     steps:
       - uses: actions/checkout@v2
