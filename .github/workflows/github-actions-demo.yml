@@ -62,6 +62,7 @@ jobs:
         with:
           python-version: '3.7'
           architecture: 'x64'
+      - run: docker logs mopidy
       - name: Install pip dependencies
         run: |
           pip install -U pip
@@ -73,5 +74,5 @@ jobs:
           python manage.py migrate
           python manage.py installwatson
           python manage.py buildwatson
-      - run: python manage.py test tests.client.test_localdrive.LocaldriveTests.test_suggested_song
+      - run: python manage.py test --failfast tests.client.test_localdrive.LocaldriveTests.test_suggested_song
 
