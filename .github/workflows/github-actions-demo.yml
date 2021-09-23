@@ -49,6 +49,7 @@ jobs:
           apt-get -y install
           ffmpeg
           gstreamer1.0-plugins-bad
+          postgresql-client
           libpq-dev
       - name: Prepare database
         run: |
