@@ -73,5 +73,5 @@ jobs:
           python manage.py migrate
           python manage.py installwatson
           python manage.py buildwatson
-      - run: python manage.py test tests.client.test_localdrive
+      - run: python manage.py test tests.client.test_localdrive.LocaldriveTests.test_suggested_song
 
