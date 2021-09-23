@@ -27,11 +27,6 @@ jobs:
       - run: yarn --cwd frontend test
   test-backend:
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres
-      redis:
-        image: redis
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -42,7 +37,14 @@ jobs:
         run: |
           pip install -U pip
           pip install -r requirements/ci.txt
-      - run: sudo apt-get -y install mopidy ffmpeg gstreamer1.0-plugins-bad
+      - run: |
+          sudo apt-get -y install
+          mopidy
+          ffmpeg
+          gstreamer1.0-plugins-bad
+          redis-server
+          postgresql
+          libpq-dev
       - name: Prepare database
         run: |
           psql -c "CREATE USER raveberry WITH PASSWORD 'raveberry';"
