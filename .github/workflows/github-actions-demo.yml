@@ -62,7 +62,8 @@ jobs:
         with:
           python-version: '3.7'
           architecture: 'x64'
-      - run: docker logs mopidy
+      - run: docker ps
+      - run: docker ps -q | xargs -L 1 docker logs
       - name: Install pip dependencies
         run: |
           pip install -U pip
