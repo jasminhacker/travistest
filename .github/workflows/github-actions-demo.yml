@@ -25,37 +25,45 @@ jobs:
   #    - run: yarn --cwd frontend test
   test-backend:
     runs-on: ubuntu-latest
-    container: python:3.7
-    #services:
-    #  postgres:
-    #    image: postgres
-    #  redis:
-    #    image: redis
-    #  mopidy:
-    #    image: raveberry/raveberry-mopidy
-    #    env:
-    #      MOPIDY_OUTPUT: fakesink sync=true
+    services:
+      postgres:
+        image: postgres
+        ports:
+          - 5432:5432
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+      mopidy:
+        image: raveberry/raveberry-mopidy
+        env:
+          MOPIDY_OUTPUT: fakesink sync=true
+        ports:
+          - 6680:6680
     env:
       POSTGRES_HOST: postgres
       REDIS_HOST: redis
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+          architecture: 'x64'
       - name: Install pip dependencies
         run: |
           pip install -U pip
           pip install -r requirements/ci.txt
-      - run: apt-get update
       - run: >
-          apt-get -y install
+          sudo apt-get -y install
           ffmpeg
           gstreamer1.0-plugins-bad
           postgresql-client
           libpq-dev
       - name: Prepare database
         run: |
-          psql -h postgres -c "CREATE USER raveberry WITH PASSWORD 'raveberry';"
-          psql -h postgres -c "CREATE DATABASE raveberry;"
-          psql -h postgres -c "ALTER USER raveberry CREATEDB;"
+          psql -h localhost -c "CREATE USER raveberry WITH PASSWORD 'raveberry';"
+          psql -h localhost -c "CREATE DATABASE raveberry;"
+          psql -h localhost -c "ALTER USER raveberry CREATEDB;"
           python manage.py migrate
           python manage.py installwatson
           python manage.py buildwatson
