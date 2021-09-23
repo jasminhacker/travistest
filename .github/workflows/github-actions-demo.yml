@@ -30,7 +30,9 @@ jobs:
       postgres:
         image: postgres
         env:
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: raveberry
+          POSTGRES_USER: raveberry
+          POSTGRES_PASSWORD: raveberry
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -54,8 +56,6 @@ jobs:
           MOPIDY_OUTPUT: fakesink sync=true
         ports:
           - 6680:6680
-    env:
-      PGPASSWORD: postgres
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -70,15 +70,12 @@ jobs:
           sudo apt-get -y install
           ffmpeg
           gstreamer1.0-plugins-bad
-          postgresql-client
+          #postgresql-client
           libpq-dev
           net-tools
       - run: netstat -tulpn
       - name: Prepare database
         run: |
-          sudo -u postgres PGPASSWORD=postgres psql -h localhost -c "CREATE USER raveberry WITH PASSWORD 'raveberry';"
-          sudo -u postgres PGPASSWORD=postgres psql -h localhost -c "CREATE DATABASE raveberry;"
-          sudo -u postgres PGPASSWORD=postgres psql -h localhost -c "ALTER USER raveberry CREATEDB;"
           python manage.py migrate
           python manage.py installwatson
           python manage.py buildwatson
