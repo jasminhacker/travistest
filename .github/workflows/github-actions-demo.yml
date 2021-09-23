@@ -56,6 +56,7 @@ jobs:
           MOPIDY_OUTPUT: fakesink sync=true
         ports:
           - 6680:6680
+          - 6600:6600
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
