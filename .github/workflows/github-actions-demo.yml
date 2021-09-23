@@ -30,6 +30,10 @@ jobs:
         image: postgres
       redis:
         image: redis
+      mopidy:
+        image: raveberry/raveberry-mopidy
+        env:
+          MOPIDY_OUTPUT: fakesink sync=true
     env:
       POSTGRES_HOST: postgres
       REDIS_HOST: redis
@@ -45,22 +49,16 @@ jobs:
           pip install -r requirements/ci.txt
       - run: >
           sudo apt-get -y install
-          mopidy
           ffmpeg
           gstreamer1.0-plugins-bad
           libpq-dev
       - name: Prepare database
         run: |
-          psql -c "CREATE USER raveberry WITH PASSWORD 'raveberry';"
-          psql -c "CREATE DATABASE raveberry;"
-          psql -c "ALTER USER raveberry CREATEDB;"
+          psql -h postgres -c "CREATE USER raveberry WITH PASSWORD 'raveberry';"
+          psql -h postgres -c "CREATE DATABASE raveberry;"
+          psql -h postgres -c "ALTER USER raveberry CREATEDB;"
           python manage.py migrate
           python manage.py installwatson
           python manage.py buildwatson
-      - name: Start mopidy
-        run: |
-          mopidy -o "audio/output=fakesink sync=true" &
-          # wait for mopidy so it can handle connections
-          sleep 5
       - run: python manage.py test
 
