@@ -59,6 +59,8 @@ jobs:
           gstreamer1.0-plugins-bad
           postgresql-client
           libpq-dev
+          net-tools
+      - run: netstat -tulpn
       - name: Prepare database
         run: |
           psql -h localhost -c "CREATE USER raveberry WITH PASSWORD 'raveberry';"
