@@ -23,7 +23,7 @@ class RaveberryTest(TransactionTestCase):
 
         import logging
 
-        logging.getLogger().setLevel(logging.INFO)
+        logging.getLogger().setLevel(logging.WARNING)
 
     @classmethod
     def tearDownClass(cls):
