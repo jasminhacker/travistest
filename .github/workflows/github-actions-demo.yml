@@ -50,13 +50,13 @@ jobs:
           --health-retries 5
         ports:
           - 6379:6379
-      mopidy:
-        image: raveberry/raveberry-mopidy
-        env:
-          MOPIDY_OUTPUT: fakesink sync=true
-        ports:
-          - 6680:6680
-          - 6600:6600
+            #mopidy:
+            #  image: raveberry/raveberry-mopidy
+            #  env:
+            #    MOPIDY_OUTPUT: fakesink sync=true
+            #  ports:
+            #    - 6680:6680
+            #    - 6600:6600
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -67,7 +67,12 @@ jobs:
         run: |
           pip install -U pip
           pip install -r requirements/ci.txt
-      - run: sudo apt-get -y install ffmpeg
+      - run: sudo apt-get -y install ffmpeg mopidy gstreamer1.0-plugins-bad
+      - name: Start mopidy
+        run: |
+          mopidy -o "audio/output=fakesink sync=true" &
+          # wait for mopidy so it can handle connections
+          sleep 5
       - name: Prepare database
         run: |
           python manage.py migrate
