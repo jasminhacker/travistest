@@ -99,7 +99,7 @@ jobs:
   check-docker-version:
     runs-on: ubuntu-latest
     outputs:
-      status: ${{ steps.early.comparison }}
+      status: ${{ steps.comparison.conclusion }}
     steps:
       - uses: actions/checkout@v2
       # https://docs.github.com/en/actions/learn-github-actions/workflow-commands-for-github-actions#setting-an-environment-variable
