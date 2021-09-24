@@ -109,7 +109,7 @@ jobs:
       - run: echo "$DOCKER_VERSION $GITHUB_VERSION"
       - name: Compare versions
         id: comparison
-        run: '[ "$DOCKER_VERSION" == "$GITHUB_VERSION" ]'
+        run: '[ "$DOCKER_VERSION" != "$GITHUB_VERSION" ]'
         continue-on-error: true
   docker-publish:
     runs-on: ubuntu-latest
