@@ -102,8 +102,10 @@ jobs:
       status: ${{ steps.early.comparison }}
     steps:
       - uses: actions/checkout@v2
-      - run: DOCKER_VERSION=$(docker pull raveberry/raveberry >/dev/null && docker run raveberry/raveberry /bin/cat /opt/raveberry/VERSION | tr -d '[:space:]')
-      - run: GITHUB_VERSION="$(cat VERSION | tr -d '[:space:]')"
+      # https://docs.github.com/en/actions/learn-github-actions/workflow-commands-for-github-actions#setting-an-environment-variable
+      - run: echo "DOCKER_VERSION=$(docker pull raveberry/raveberry >/dev/null && docker run raveberry/raveberry /bin/cat /opt/raveberry/VERSION | tr -d '[:space:]')" >> $GITHUB_ENV
+
+      - run: echo "GITHUB_VERSION=$(cat VERSION | tr -d '[:space:]')" >> $GITHUB_ENV
       - run: echo "$DOCKER_VERSION $GITHUB_VERSION"
       - name: Compare versions
         id: comparison
