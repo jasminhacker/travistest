@@ -104,7 +104,6 @@ jobs:
       - run: DOCKER_VERSION=$(docker pull raveberry/raveberry >/dev/null && docker run raveberry/raveberry /bin/cat /opt/raveberry/VERSION | tr -d '[:space:]')
       - run: PYPI_VERSION="$(cat VERSION | tr -d '[:space:]')"
       - id: comparison
-        name: Compare versions
         run: [ "$DOCKER_VERSION" == "$PYPI_VERSION" ]
   docker-publish:
     runs-on: ubuntu-latest
