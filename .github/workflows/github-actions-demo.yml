@@ -143,4 +143,4 @@ jobs:
           echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
       - name: Available platforms
         run: echo ${{ steps.buildx.outputs.platforms }}
-      - run: docker buildx --platform linux/amd64,linux/arm/v7 .
+      - run: docker buildx build --platform linux/amd64,linux/arm/v7 .
