@@ -106,7 +106,6 @@ jobs:
       - run: echo "DOCKER_VERSION=$(docker pull raveberry/raveberry >/dev/null && docker run raveberry/raveberry /bin/cat /opt/raveberry/VERSION | tr -d '[:space:]')" >> $GITHUB_ENV
 
       - run: echo "GITHUB_VERSION=$(cat VERSION | tr -d '[:space:]')" >> $GITHUB_ENV
-      - run: echo "$DOCKER_VERSION $GITHUB_VERSION"
       - name: Compare versions
         id: comparison
         run: '[ "$DOCKER_VERSION" != "$GITHUB_VERSION" ]'
