@@ -99,7 +99,8 @@ jobs:
   check-docker-version:
     runs-on: ubuntu-latest
     outputs:
-      status: ${{ steps.comparison.conclusion }}
+      # use output instead of conclusion because there are issues if the step does not succeed
+      status: ${{ steps.comparison.output }}
     steps:
       - uses: actions/checkout@v2
       # https://docs.github.com/en/actions/learn-github-actions/workflow-commands-for-github-actions#setting-an-environment-variable
@@ -108,12 +109,11 @@ jobs:
       - run: echo "GITHUB_VERSION=$(cat VERSION | tr -d '[:space:]')" >> $GITHUB_ENV
       - name: Compare versions
         id: comparison
-        run: '[ "$DOCKER_VERSION" != "$GITHUB_VERSION" ]'
-        continue-on-error: true
+        run: 'if [ "$DOCKER_VERSION" != "$GITHUB_VERSION" ]; then echo "update-docker"'
   docker-publish:
     runs-on: ubuntu-latest
     needs: [test-frontend, test-backend, check-docker-version]
-    if: needs.check-docker-version.outputs.status == 'success'
+    if: needs.check-docker-version.outputs.status == 'update-docker'
     steps:
       - run: echo "publishing docker"
       #- uses: actions/checkout@v2
