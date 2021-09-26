@@ -13,6 +13,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+  test-install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+      - name: Install pip dependencies
+        run: |
+          pip install -U pip
+          pip install -r requirements/install.txt
+      - run: sudo apt-get -y expect
+      - run: expect -c 'spawn raveberry --confirm-config system-install; expect ":"; send "admin\r"; expect ":"; send "admin\r"; expect eof'
+      - run: curl http://localhost/api/version/
   check-versions:
     runs-on: ubuntu-latest
     outputs:
@@ -21,25 +35,16 @@ jobs:
       pypi-status: ${{ steps.comparison.outputs.pypi-status }}
     steps:
       - uses: actions/checkout@v2
-      # https://docs.github.com/en/actions/learn-github-actions/workflow-commands-for-github-actions#setting-an-environment-variable
-      - run: echo "GITHUB_VERSION=$(cat VERSION | tr -d '[:space:]')" >> $GITHUB_ENV
-      - run: echo "PYPI_VERSION=$(curl -Ls https://pypi.org/pypi/raveberry/json | jq -r .info.version | tr -d '[:space:]')" >> $GITHUB_ENV
-      - run: echo "DOCKER_VERSION=$(docker pull raveberry/raveberry >/dev/null && docker run raveberry/raveberry /bin/cat /opt/raveberry/VERSION | tr -d '[:space:]')" >> $GITHUB_ENV
-      - name: Compare versions
-        id: comparison
-        run: |
-          if [ "$DOCKER_VERSION" != "$GITHUB_VERSION" ]; then echo "::set-output name=docker-status::update"; fi
-          if [ "$PYPI_VERSION" != "$GITHUB_VERSION" ]; then echo "::set-output name=pypi-status::update"; fi
   pypi-publish:
     runs-on: ubuntu-latest
-    needs: [test-frontend, test-backend, check-versions]
+    needs: [test-frontend, test-backend, test-install, check-versions]
     if: needs.check-versions.outputs.pypi-status == 'update'
     # from https://packaging.python.org/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/
     steps:
       - run: echo "publishing docker"
   docker-publish:
     runs-on: ubuntu-latest
-    needs: [test-frontend, test-backend, check-versions]
+    needs: [test-frontend, test-backend, test-install, check-versions]
     if: needs.check-versions.outputs.docker-status == 'update'
     steps:
-      - run: echo "publishing docker"
+      - uses: actions/checkout@v2
