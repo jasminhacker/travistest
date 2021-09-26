@@ -25,7 +25,7 @@ jobs:
           pip install -U pip
           pip install -r requirements/install.txt
       - run: sudo apt-get install -y expect
-      - run: expect -c 'spawn bin/raveberry --confirm-config system-install; expect ":"; send "admin\r"; expect ":"; send "admin\r"; expect eof'
+      - run: expect -c 'set timeout -1; spawn bin/raveberry --confirm-config system-install; expect ":"; send "admin\r"; expect ":"; send "admin\r"; expect eof'
       - run: curl http://localhost/api/version/
   check-versions:
     runs-on: ubuntu-latest
