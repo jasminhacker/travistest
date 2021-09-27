@@ -31,9 +31,18 @@ jobs:
           sudo rm -rf /usr/lib/python3/dist-packages/PyYAML-*
       - run: sudo systemctl start postgresql
       - run: expect -c 'set timeout -1; spawn bin/raveberry --confirm-config system-install; expect ":"; send "admin\r"; expect ":"; send "admin\r"; expect eof; catch wait result; exit [lindex $result 3]'
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-      - run: curl http://localhost/api/version/
+        #- name: Setup tmate session
+        #  uses: mxschmitt/action-tmate@v3
+      - name: Check if server is up
+        run: |
+          counter=0
+          until [[ $(curl -sS http://localhost/api/version/) == "Raveberry version"* ]] || [ $counter -gt 60 ]
+          do
+            echo Counter: $counter
+            ((counter++))
+            sleep 1
+          done
+
   check-versions:
     runs-on: ubuntu-latest
     outputs:
