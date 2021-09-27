@@ -36,7 +36,7 @@ jobs:
       - name: Check if server is up
         run: |
           counter=0
-          until [[ $(curl -sS http://localhost/api/version/) == "Ravebery version"* ]] || [ $counter -gt 30 ]
+          until [[ $(curl -sS http://localhost/api/version/) == "Raveberry version"* ]] || [ $counter -gt 30 ]
           do
             echo Counter: $counter
             counter=$((counter + 1))
