@@ -35,30 +35,14 @@ jobs:
         #  uses: mxschmitt/action-tmate@v3
       - name: Check if server is up
         run: |
-          curl -sS http://localhost/api/version/
-          sleep 5
-          curl -sS http://localhost/api/version/
-          sleep 5
-          curl -sS http://localhost/api/version/
-          sleep 5
-          curl -sS http://localhost/api/version/
-          sleep 5
-          curl -sS http://localhost/api/version/
-          sleep 5
-          curl -sS http://localhost/api/version/
-          sleep 5
-          curl -sS http://localhost/api/version/
-          sleep 5
-          curl -sS http://localhost/api/version/
-          sleep 5
-          curl -sS http://localhost/api/version/
-          sleep 5
-          curl -sS http://localhost/api/version/
-          sleep 5
-          curl -sS http://localhost/api/version/
-          sleep 5
-          curl -sS http://localhost/api/version/
-          sleep 5
+          counter=0
+          until [[ $(curl -sS http://localhost/api/version/) == "Raveberry version"* ]] || [ $counter -gt 60 ]
+          do
+            echo Counter: $counter
+            counter=$((counter + 1))
+            sleep 1
+          done
+
   check-versions:
     runs-on: ubuntu-latest
     outputs:
