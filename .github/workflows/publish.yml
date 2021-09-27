@@ -16,23 +16,24 @@ jobs:
   test-install:
     runs-on: ubuntu-latest
     steps:
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-      #- uses: actions/checkout@v2
-      #- uses: actions/setup-python@v2
-      #  with:
-      #    python-version: '3.7'
-      #- name: Install pip dependencies
-      #  run: |
-      #    pip install -U pip
-      #    pip install -r requirements/install.txt
-      #- run: sudo apt-get install -y expect
-      #- name: remove pyyaml
-      #  run: |
-      #    sudo rm -rf /usr/lib/python3/dist-packages/yaml
-      #    sudo rm -rf /usr/lib/python3/dist-packages/PyYAML-*
-      #- run: expect -c 'set timeout -1; spawn bin/raveberry --confirm-config system-install; expect ":"; send "admin\r"; expect ":"; send "admin\r"; expect eof; catch wait result; exit [lindex $result 3]'
-      #- run: curl http://localhost/api/version/
+      #- name: Setup tmate session
+      #  uses: mxschmitt/action-tmate@v3
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+      - name: Install pip dependencies
+        run: |
+          pip install -U pip
+          pip install -r requirements/install.txt
+      - run: sudo apt-get install -y expect
+      - name: remove pyyaml
+        run: |
+          sudo rm -rf /usr/lib/python3/dist-packages/yaml
+          sudo rm -rf /usr/lib/python3/dist-packages/PyYAML-*
+      - run: systemctl start postgresql
+      - run: expect -c 'set timeout -1; spawn bin/raveberry --confirm-config system-install; expect ":"; send "admin\r"; expect ":"; send "admin\r"; expect eof; catch wait result; exit [lindex $result 3]'
+      - run: curl http://localhost/api/version/
   check-versions:
     runs-on: ubuntu-latest
     outputs:
