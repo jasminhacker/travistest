@@ -36,13 +36,14 @@ jobs:
       - name: Check if server is up
         run: |
           counter=0
-          until [[ $(curl -sS http://localhost/api/version/) == "Raveberry version"* ]] || [ $counter -gt 60 ]
+          until [[ $(curl -sS http://localhost/api/version/) == "Ravebery version"* ]] || [ $counter -gt 30 ]
           do
             echo Counter: $counter
             counter=$((counter + 1))
             sleep 1
           done
-
+          # exit with failure if curl did not succeed in any iteration
+          [ $counter != 31 ]
   check-versions:
     runs-on: ubuntu-latest
     outputs:
