@@ -3,7 +3,10 @@ import * as fs from 'fs';
 
 export function renderTemplate(template, options?) {
   options = JSON.stringify(options) || '';
-  const p = child.spawnSync('python3', ['../manage.py', 'rendertemplate', template, 'head.html', 'body.html', options]);
+  const p = child.spawnSync('python3', ['../manage.py', 'rendertemplate', template, 'head.html', 'body.html', options], {
+    env: {
+      DEBUG: "1",
+    }});
   if (p.error) {
     throw p.error;
   }
