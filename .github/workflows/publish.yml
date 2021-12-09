@@ -86,7 +86,6 @@ jobs:
           mopidy -o "audio/output=fakesink sync=true" &
           # wait for mopidy so it can handle connections
           sleep 5
-          TODO
       - name: Prepare database
         run: |
           python manage.py migrate
