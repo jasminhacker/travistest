@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "watson",
+    "django.contrib.postgres",
     "channels",
 ]
 
@@ -60,8 +60,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "core.user_manager.SimpleMiddleware",
-    "watson.middleware.SearchContextMiddleware",
 ]
 
 ROOT_URLCONF = "main.urls"
@@ -105,7 +103,8 @@ else:
     TEST_CACHE_DIR = os.path.join(BASE_DIR, "test_cache/")
 
 # Database
-if DEBUG:
+
+if DEBUG and False:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
@@ -149,6 +148,9 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
+# In order to avoid unexpected migrations when the default value is changed to BigAutoField,
+# set it here explicitly.
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 # Internationalization
 LANGUAGE_CODE = "en-us"
@@ -174,12 +176,9 @@ if not os.path.exists(os.path.join(BASE_DIR, "static/admin")):
 
     DJANGO_PATH = os.path.dirname(django.__file__)
     STATIC_ADMIN = os.path.join(DJANGO_PATH, "contrib/admin/static/admin")
-    if DOCKER:
-        # copy the files since nginx runs in another container
-        shutil.copytree(STATIC_ADMIN, os.path.join(BASE_DIR, "static/admin"))
-        print("copied static admin files")
-    else:
+    if not DOCKER:
         # create symlink to admin static files if not present
+        # In the docker setup, the nginx container includes the static files on build
         os.symlink(
             STATIC_ADMIN,
             os.path.join(BASE_DIR, "static/admin"),
@@ -253,12 +252,10 @@ LOGGING = {
 LOGGING_CONFIG = None  # disables Django handling of logging
 logging.config.dictConfig(LOGGING)
 
-# Security Settings
-# SECURE_CONTENT_TYPE_NOSNIFF = True
-# SECURE_BROWSER_XSS_FILTER = True
+# In local networks Raveberry is only accessible via http, secure cookies are not possible there.
+# If Raveberry is only used with https, these should be enabled.
 # SESSION_COOKIE_SECURE = True
 # CSRF_COOKIE_SECURE = True
-# X_FRAME_OPTIONS = 'DENY'
 
 # app settings
 try:

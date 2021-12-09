@@ -4,8 +4,7 @@ import inspect
 from typing import Any, List
 
 from django.core.handlers.wsgi import WSGIRequest
-from django.urls import include, URLPattern
-from django.urls import path
+from django.urls import include, path, URLPattern
 from django.views.generic import RedirectView
 
 import core.api as api
@@ -31,11 +30,11 @@ urlpatterns = [
     path("musiq/", musiq.index, name="musiq"),
     path("lights/", lights.index, name="lights"),
     path("stream/", base.no_stream, name="no-stream"),
-    path("network_info/", network_info.index, name="network-info"),
+    path("network-info/", network_info.index, name="network-info"),
     path("settings/", settings.index, name="settings"),
     path("accounts/", include("django.contrib.auth.urls")),
     path("login/", RedirectView.as_view(pattern_name="login", permanent=False)),
-    path("logged_in/", base.logged_in, name="logged-in"),
+    path("logged-in/", base.logged_in, name="logged-in"),
     path("logout/", RedirectView.as_view(pattern_name="logout", permanent=False)),
     path(
         "api/",
@@ -44,7 +43,12 @@ urlpatterns = [
                 path("version/", api.version, name="version"),
                 path(
                     "musiq/",
-                    include([path("post_song/", api.post_song, name="post-song")]),
+                    include(
+                        [
+                            path("post_song/", api.post_song, name="post_song"),
+                            path("post-song/", api.post_song, name="post-song"),
+                        ]
+                    ),
                 ),
             ]
         ),

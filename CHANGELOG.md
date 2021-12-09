@@ -1,5 +1,79 @@
 # Changelog
 
+## 0.9.9 - 2021-12-09
+- Big suggestion improvements:
+* Trigram similarity is used instead of full text search
+* Now Raveberry can provide suggestions for substrings, stop words (and, a, the etc.) and typos
+* This is slower, but GIN indexes and config tweaking minimize overhead
+
+- Metadata is cached in the database. Suggestions are now faster than before, despite the slower query.
+- Directly after the update, durations are shown incorrectly. Either wait a day until metadata is synced automatically, or run:
+- `sudo -u www-data python3 /opt/raveberry/manage.py syncsongmetadata`
+
+- Upgraded to Django 4.0. This was necessary to use functional indexes.
+- Django 2.2 would be out of support soon anyway, so now was a good time.
+- Python 3.8 or higher is now required.
+- The main reason for not upgrading was that multiple asgi-requests could not be processed in parallel since Django 3.0.
+- In 4.0, context-aware `sync_to_async` removes this issue, finally allowing the upgrade without usability impact.
+
+- When checking whether voting is allowed on server side, a redis transaction is used to reduce performance impact.
+- Settings are cached for a short time, removing load from tasks that query settings often when they change very rarely.
+- Only some endpoints are tracked TODO: which
+
+- Switched from youtube-dl to yt-dlp, significantly increasing download speed.
+
+## 0.9.8 - 2021-12-01
+- Fixed bug where color definitions got lost in the css minification process
+- Tapping an "error" suggestion does nothing
+- Buttons for queue control are further apart (and thus harder to mit-select)
+
+## 0.9.6 - 2021-11-27
+- Suggestions are much more responsive:
+* The first line (the query itself) is shown immediately
+* Offline suggestions are shown as soon as they are ready and don't wait for the online suggestions
+* Placeholders for online suggestions until they are available
+* Different platforms (e.g. Youtube and Spotify) are queried in parallel
+
+- Increase dhcp ip range for hotspot
+- Bluetooth scanning and connecting does not spit a huge error anymore. Cause was that requests were sent twice.
+- Song duration is shown in song info modal. Current song duration can now be determined
+- Ring visualization improved
+- The Raspberry Pi's internal pwr led (red) is disabled when the ring is active
+- The internal act led (green) indicates active Raveberry requests
+
+## 0.9.5 - 2021-10-18
+- Add option for server-side vote duplication checking by IP
+- Use session keys instead of IPs to link requests logs
+- Most active device entry is sorted correctly in analysis section
+- Page does not scroll on mobile after clearing the input field
+- Old hashtag doesn't start scrolling when adding a new one
+- Correct QR code is shown for hotspot wifi on `/network-info`
+- Improve documentation for remote feature
+- Pin postgres version in docker-compose files
+- Admin page in docker container looks fine now
+
+## 0.9.4 - 2021-10-06
+- Frontend files are shipped with the pypi package
+- Long modals are scrollable (e.g. changelog, upgrade confirmation dialog)
+
+## 0.9.3 - 2021-09-27
+- Bind address can be specified for reverse ssh tunnel
+- If specified, remote ssh key is always overwritten, even if one already exists (#118)
+- Allowed discord bot to receive the queue key of requested songs
+- System install is tested in CI
+
+## 0.9.2 - 2021-09-24
+- Database is registered correctly in celery workers. New songs will directly appear in suggestions again.
+- Current song can be deleted in settings to help recover from disconnection problems (#116)
+- Add donation link to readme
+- Moved from travis to github actions
+- Songs with identical suggestions show their duration for disambiguation in suggestions
+- Arrow to insert suggestion into search input field is only shown for online suggestions
+- Clearing the song input field is easier, the x has a bigger interaction area
+- Analysis results are shown again
+- Error message when there are no songs to analyze
+- Red and blue colors are more prominent in rainbow LED visualization
+
 ## 0.9.1 - 2021-09-16
 - Fix installation issue by quoting rsync argument and pinning ansible (#115).
 - Mopidy container also loads jamendo client id from environment.
@@ -286,9 +360,7 @@
 ## 0.6.4 - 2020-05-20
 
 - Started keeping this changelog.
-- Songs are now upvoted automatically after requesting.  
-This required removing the placeholders as a special queue instance. Now, every request results in a persisted queue entry that is removed on error. The db-key of this queue entry is handed back to the client for upvoting.  
-As a side effect, the new placeholders can be reordered, voted for and even removed. This required some refactoring, but now the request process is a little less convoluted.
+- Songs are now upvoted automatically after requesting. This required removing the placeholders as a special queue instance. Now, every request results in a persisted queue entry that is removed on error. The db-key of this queue entry is handed back to the client for upvoting. As a side effect, the new placeholders can be reordered, voted for and even removed. This required some refactoring, but now the request process is a little less convoluted.
 - Decreased the number of votes required to kick a song to 2, as every song starts out with 1 now.
 - `module-bluetooth-policy` is loaded on boot, which is needed by some devices.
 - Added version information in the settings.

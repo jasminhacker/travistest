@@ -12,8 +12,88 @@ from typing import Tuple, List, cast, Optional, TYPE_CHECKING
 
 from django.conf import settings
 
+from core.lights import leds
+
+enabled = True
+
 if TYPE_CHECKING:
     from core.lights.worker import DeviceManager
+
+
+def stretched_hues(led_count: int, offset: float = 0):
+    """Stretches red and blue, compresses green and pink."""
+    # Uses the logistic curve to make colors more prominent and compress the others
+    #
+    #  ^ out hue
+    # 1-        xx
+    #  |       x
+    #  |     xx
+    #  |    x
+    #  |   x
+    #  |   x
+    #  |  x
+    #  |xx
+    #  -|--|--|--|> in hue
+    #   R  G  B  R
+    #
+    # Two logistic curves are combined to compress two colors (green and pink).
+    # Green is compressed because the board is green and visible anyway.
+    # Pink just does not look that good.
+
+    M1 = 2 / 3
+    M2 = 1 / 3
+
+    def f(x):
+        # First curve, compresses green (hue = ⅓)
+        def L1(x):
+            return M1 / (1 + math.e ** (-16 * (x - 1 / 3)))
+
+        # First curve, compresses pink (hue = ⅚)
+        def L2(x):
+            return M2 / (1 + math.e ** (-16 * (x - 5 / 6)))
+
+        if x < 2 / 3:
+            # Vertically stretch and move the curve so it starts at y=0 and ends at y=M
+            y0 = L1(0)
+            scale = M1 / (M1 - 2 * y0)
+            return scale * (L1(x) - y0)
+        else:
+            y0 = L2(2 / 3)
+            scale = M2 / (M2 - 2 * y0)
+            return scale * (L2(x) - y0) + M1
+
+    return [f((offset + led / led_count) % 1) % 1 for led in range(0, led_count)]
+
+
+def stretched_hues_spectrum(led_count: int):
+    """Stretches red and blue, compressing green, but removes pink.
+    Adds a short red section, because red is chronically underrepresented.
+    Doesn't take an offset, because the ends do not match up,
+    leading to jumps in hue. Only used for the spectrum."""
+    #  ^ out hue
+    # 1-
+    #  |
+    # ⅔-       xx
+    #  |      x
+    #  |     x
+    #  |     x
+    #  |    x
+    #  |xxxx
+    #  -|--|--|--|> in hue
+    #   R  G  B  R
+    M = 2 / 3
+
+    def f(x):
+        def L(x):
+            return M / (1 + math.e ** (-12 * (x - 9 / 16)))
+
+        if x < 1 / 8:
+            return 0
+        y0 = L(1 / 8)
+        scale = M / (M - 2 * y0)
+        return scale * L(x) - y0
+
+    return [f(led / led_count) % 1 for led in range(0, led_count)]
 
 
 class VizProgram:
@@ -146,8 +226,8 @@ class Rainbow(LedProgram):
 
     def _colors(self, led_count) -> List[Tuple[float, float, float]]:
         return [
-            colorsys.hsv_to_rgb((self.current_fraction + led / led_count) % 1, 1, 1)
-            for led in range(led_count)
+            colorsys.hsv_to_rgb(hue, 1, 1)
+            for hue in stretched_hues(led_count, self.current_fraction)
         ]
 
     def ring_colors(self) -> List[Tuple[float, float, float]]:
@@ -171,33 +251,16 @@ class Adaptive(LedProgram):
         self.cava = self.manager.cava_program
 
         # RING
-        # map the leds to rainbow colors from red over green to blue
-        # (without pink-> hue values in [0, ⅔]
-        # stretch the outer regions (red and blue) and compress the inner region (green)
-        ring_hues = [
-            (2 / 3)
-            * 1
-            / (
-                1
-                + math.e
-                ** (-4 * math.e * (led / (self.manager.ring.LED_COUNT - 1) - 0.5))
-            )
-            for led in range(0, self.manager.ring.LED_COUNT)
-        ]
+        # The spectrum needs to have a color for low frequencies (red)
+        # and a color for high frequencies (blue)
+        # In order to show a clean separation between the spectrum ends,
+        # the color between the two (pink) is removed from the pool of possible colors.
+        ring_hues = stretched_hues_spectrum(self.manager.ring.LED_COUNT)
         self.ring_base_colors = [colorsys.hsv_to_rgb(hue, 1, 1) for hue in ring_hues]
 
         # WLED
         # identical to ring, but with a different number of leds
-        wled_hues = [
-            (2 / 3)
-            * 1
-            / (
-                1
-                + math.e
-                ** (-4 * math.e * (led / (self.manager.wled.led_count - 1) - 0.5))
-            )
-            for led in range(0, self.manager.wled.led_count)
-        ]
+        wled_hues = stretched_hues_spectrum(self.manager.wled.led_count)
         self.wled_base_colors = [colorsys.hsv_to_rgb(hue, 1, 1) for hue in wled_hues]
 
         # STRIP
@@ -309,6 +372,8 @@ class Alarm(VizProgram):
         self.sound_count = 0
         self.increasing_duration = 0.45
         self.decreasing_duration = 0.8
+        # only during this program, thus False by default
+        self.pwr_led_enabled = False
         self.sound_duration = 2.1
         self.sound_repetition = 2.5
         self.factor = -1.0
@@ -344,6 +409,15 @@ class Alarm(VizProgram):
             )
         else:
             self.factor = 0
+
+        # Ideally, the pwr led would flash with increasing frequency,
+        # but the Pi can not handle enough script executions to make it look good.
+        if self.pwr_led_enabled and self.factor < 0.7:
+            leds.disable_pwr_led()
+            self.pwr_led_enabled = False
+        elif not self.pwr_led_enabled and self.factor >= 0.7:
+            leds.enable_pwr_led()
+            self.pwr_led_enabled = True
 
     def stop(self) -> None:
         self.factor = -1.0

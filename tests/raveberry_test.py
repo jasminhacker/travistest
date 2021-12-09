@@ -1,4 +1,5 @@
 import json
+import logging
 import time
 from threading import Thread
 
@@ -21,8 +22,7 @@ class RaveberryTest(TransactionTestCase):
         cls.celery_worker = start_worker(app, perform_ping_check=False)
         cls.celery_worker.__enter__()
 
-        import logging
-
+        # show logs during testing
         logging.getLogger().setLevel(logging.WARNING)
 
     @classmethod

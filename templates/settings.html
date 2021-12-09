@@ -19,6 +19,10 @@
 		<span class="description">Voting</span>
 		<input type="checkbox" id="voting-enabled">
 	</li>
+	<li class="list-group-item list-item">
+		<span class="description">IP vote checking</span>
+		<input type="checkbox" id="ip-checking">
+	</li>
     <li class="list-group-item list-item">
         <span class="description">New music only</span>
         <input type="checkbox" id="new-music-only">
@@ -254,7 +258,8 @@
 		<span class="description">Player status (restarting player/server might fix errors)</span>
 		<span id="player-status"></span>
 	</li>
-	<li class="list-group-item list-item centered">
+	<li class="list-group-item list-item">
+		<button class="btn" id="delete-current-song">Delete Current Song</button>
 		<button class="btn" id="restart-player">Restart Player</button>
 	</li>
 </ul>

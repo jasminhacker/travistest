@@ -20,9 +20,9 @@
 	font-size:.375rem;
 }
 #music-input {
-	padding: 6px;
 	min-width: 100px;
-	padding-right: 20px;
+	padding: 6px;
+	padding-right: 26px;
 }
 
 span.clearable {
@@ -43,6 +43,11 @@ span.clearable i {
 span.clearable input {
 	padding-right: 16px;
 	box-sizing: border-box;
+}
+#clearbutton {
+	// make the click area bigger but keep centered
+	margin: -10px -10px;
+	padding: 10px 10px;
 }
 
 // autocomplete
@@ -99,6 +104,24 @@ span.clearable input {
 	color: var(--silent-text);
 	text-decoration: line-through;
 }
+@keyframes placeholderShimmer {
+	0% {
+		background-position: 0 0;
+	}
+	100% {
+		background-position: 50000px 0;
+	}
+}
+.placeholder {
+	// The animation does not loop perfectly. Use a long duration to avoid running into a janky transition.
+	animation-duration: 100s;
+	animation-iteration-count: infinite;
+	animation-timing-function: linear;
+	animation-name: placeholderShimmer;
+	background: linear-gradient(to right, #eeeeee 0px, #cccccc 50px, #eeeeee 100px);
+	display: inline-block;
+	height: 1em;
+}
 
 // current song
 #current-song {
@@ -118,11 +141,6 @@ span.clearable input {
 #stream-control.fa-volume-mute {
 	// move muted and not muted speakers to the same position
 	margin-left: -1.5px;
-}
-#stream-control-counterpart {
-	min-width: 32px;
-	padding-left: 5px;
-	float: right;
 }
 
 #progress-bar-container {
@@ -185,8 +203,8 @@ span.clearable input {
 	width: 50%;
 }
 #queue-controls i {
-	padding-left: 5px;
-	padding-right: 5px;
+	padding-left: 10px;
+	padding-right: 10px;
 }
 #queue-controls {
 	width: 25%;
@@ -275,6 +293,7 @@ $entry-height: 50px;
 	height: 100%;
 }
 
-#youtube-link {
-	padding: 10px;
+#title-modal .modal-text {
+	display: flex;
+	flex-direction: column;
 }

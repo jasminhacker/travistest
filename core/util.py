@@ -55,11 +55,13 @@ def broadcast_of_device(device: str) -> str:
 def service_installed(service: str) -> bool:
     if not service.endswith(".service"):
         service += ".service"
-    out = subprocess.check_output(
-        ["systemctl", "list-unit-files", service], universal_newlines=True
-    )
+    out = subprocess.run(
+        ["systemctl", "list-unit-files", service],
+        universal_newlines=True,
+        stdout=subprocess.PIPE,
+    ).stdout
     return len(out.splitlines()) > 3
 
 
-def csrf_failure(_request: WSGIRequest, _reason: str = "") -> HttpResponse:
+def csrf_failure(request, reason="", template_name=""):
     return HttpResponseForbidden("Please reload")

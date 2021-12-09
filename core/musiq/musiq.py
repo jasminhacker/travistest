@@ -12,6 +12,7 @@ from django.forms.models import model_to_dict
 from django.http import HttpResponseBadRequest
 from django.http.response import HttpResponse, JsonResponse
 from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
 
 from django.utils import timezone
 
@@ -47,11 +48,12 @@ def get_alarm_metadata() -> "Metadata":
         "internal_url": "alarm",
         "external_url": "https://raveberry.party/alarm",
         "stream_url": None,
+        "cached": True,
     }
 
 
 def do_request_music(
-    request_ip: str,
+    session_key: str,
     query: str,
     key: Optional[int],
     playlist: bool,
@@ -166,7 +168,7 @@ def do_request_music(
     for i, provider in enumerate(providers):
         try:
             provider.request(
-                request_ip, archive=archive, manually_requested=manually_requested
+                session_key, archive=archive, manually_requested=manually_requested
             )
             # the current provider could provide the song, don't try the other ones
             break
@@ -192,6 +194,9 @@ def do_request_music(
     return True, message, queue_key
 
 
+# accessed by the discord bot
+@csrf_exempt
+@user_manager.tracked
 def request_music(request: WSGIRequest) -> HttpResponse:
     """Endpoint to request music. Calls internal function."""
     key = request.POST.get("key")
@@ -207,28 +212,27 @@ def request_music(request: WSGIRequest) -> HttpResponse:
     if key:
         ikey = int(key)
 
-    # only get ip on user requests
-    request_ip = user_manager.get_client_ip(request)
-
     successful, message, queue_key = do_request_music(
-        request_ip, query, ikey, playlist, platform
+        request.session.session_key, query, ikey, playlist, platform
     )
     if not successful:
         return HttpResponseBadRequest(message)
+
+    if storage.get("ip_checking") and not playlist:
+        user_manager.try_vote(user_manager.get_client_ip(request), queue_key, 1)
+
     return JsonResponse({"message": message, "key": queue_key})
 
 
+@user_manager.tracked
 def request_radio(request: WSGIRequest) -> HttpResponse:
     """Endpoint to request radio for the current song."""
-    # only get ip on user requests
-    request_ip = user_manager.get_client_ip(request)
-
     try:
         current_song = CurrentSong.objects.get()
     except CurrentSong.DoesNotExist:
         return HttpResponseBadRequest("Need a song to play the radio")
     provider = SongProvider.create(external_url=current_song.external_url)
-    return provider.request_radio(request_ip)
+    return provider.request_radio(request.session.session_key)
 
 
 def index(request: WSGIRequest) -> HttpResponse:
@@ -241,6 +245,12 @@ def index(request: WSGIRequest) -> HttpResponse:
     context["forbidden_keywords"] = storage.get("forbidden_keywords")
     context["embed_stream"] = storage.get("embed_stream")
     context["dynamic_embedded_stream"] = storage.get("dynamic_embedded_stream")
+    for platform in ["youtube", "spotify", "soundcloud", "jamendo"]:
+        if storage.get("online_suggestions") and storage.get(f"{platform}_enabled"):
+            suggestion_count = storage.get(f"{platform}_suggestions")
+        else:
+            suggestion_count = 0
+        context[f"{platform}_suggestions"] = suggestion_count
     return render(request, "musiq.html", context)
 
 

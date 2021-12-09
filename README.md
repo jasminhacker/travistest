@@ -1,13 +1,13 @@
 # Raveberry
 
-[![Build Status](https://img.shields.io/travis/com/raveberry/raveberry)](https://travis-ci.com/github/raveberry/raveberry)
+[![Build Status](https://img.shields.io/github/workflow/status/raveberry/raveberry/Publish%20Raveberry)](https://github.com/raveberry/raveberry/actions/workflows/publish.yml)
 [![PyPI](https://img.shields.io/pypi/v/raveberry)](https://pypi.org/project/raveberry/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Subreddit subscribers](https://img.shields.io/reddit/subreddit-subscribers/raveberry?style=social)](https://www.reddit.com/r/raveberry/)
 
 Raveberry is a multi user music server that allows democratic selection of songs.
 
-It provides an intuitive interface for requesting songs and changing their order according to the rating that users have made. It supports YouTube, Spotify, Soundcloud and local files as sources for music.
+It provides an intuitive interface for requesting songs and changing their order according to the rating that users have made. It supports YouTube, Spotify and local files as sources for music.
 
 A live demo is available at https://demo.raveberry.party/.
 
@@ -120,13 +120,13 @@ Specify a domain to make your Raveberry accessible from the world wide web.
 Play all the files you already have in your local filesystem. Various filetypes supported.
 
 * **YouTube Support**:
-With `youtube-dl` as a media provider, all of YouTube is available to play.
+With `yt-dlp` as a media provider, all of YouTube is available to play.
 
 * **Spotify Support**:
 Raveberry's music player `mopidy` can play songs from Spotify, if you to log in with your account. Spotify Premium is required.
 
 * **Soundcloud Support**:
-Songs from Soundcloud are also available for you to play.
+Songs from Soundcloud are also available for you to play. ([currently broken](https://github.com/raveberry/raveberry/issues/117))
 
 * **Privilege Levels**:
 Grant people additional permissions like playback control.
@@ -235,7 +235,7 @@ Now you should be able to start the server with `raveberry run`, login with admi
 * Especially [Mopidy-Spotify](https://github.com/mopidy/mopidy-spotify), without which I could not have added Spotify support.
 * [django](https://www.djangoproject.com/), for providing one of the best documentations I have ever encountered.
 * [@karlstav](https://github.com/karlstav) for his audio visualizer [`cava`](https://github.com/karlstav/cava).
-* [`youtube-dl`](https://github.com/ytdl-org/youtube-dl/) for greatly simplifying the interaction with YouTube.
+* [`yt-dlp`](https://github.com/yt-dlp/yt-dlp) for greatly simplifying the interaction with YouTube.
 * [Steven van Tetering](https://www.tikveel.nl/) for writing [the shader](https://www.shadertoy.com/view/llycWD) I based my visualization on.
 * All my friends for constantly beta testing this project.
 

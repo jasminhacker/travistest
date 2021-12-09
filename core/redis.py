@@ -1,6 +1,6 @@
 """This module provides functionality to interface with Redis."""
 from ast import literal_eval
-from typing import Any, Union, List, Dict
+from typing import Any, Union, List, Dict, Optional
 
 from django.conf import settings as conf
 from redis import Redis
@@ -38,6 +38,7 @@ defaults = {
     "bluetoothctl_active": False,
     "bluetooth_devices": [],
     # user manager
+    "active_requests": 0,
     "last_user_count_update": 0.0,
     "last_requests": {},
 }
@@ -54,6 +55,9 @@ def start() -> None:
 lock = redis_connection.lock
 pubsub = redis_connection.pubsub
 publish = redis_connection.publish
+transaction = redis_connection.transaction
+incr = redis_connection.incr
+decr = redis_connection.decr
 
 
 def get(key: str) -> Union[bool, int, float, str, List, Dict]:
@@ -74,9 +78,10 @@ def get(key: str) -> Union[bool, int, float, str, List, Dict]:
     return type(default)(value)
 
 
-def set(key: str, value: Any) -> None:
-    """This method sets the value for the given :param key: to the given :param value:."""
-    redis_connection.set(key, str(value))
+def set(key: str, value: Any, ex: Optional[float] = None) -> None:
+    """This method sets the value for the given :param key: to the given :param value:.
+    If set, the key will expire after :param ex: seconds."""
+    redis_connection.set(key, str(value), ex=ex)
 
 
 class Event:

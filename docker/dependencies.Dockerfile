@@ -1,17 +1,17 @@
-FROM debian:buster
+FROM debian:bullseye
 
 COPY common.txt youtube.txt spotify.txt soundcloud.txt prod.txt docker.txt ./
 
 RUN apt-get update &&\
-	apt-get install -y python3-pip ffmpeg atomicparsley wget gnupg audiotools libfaad2 libpq-dev &&\
+	apt-get install -y python3-pip inetutils-ping ffmpeg wget gnupg audiotools libfaad2 libpq-dev &&\
 	apt-get clean
 
 RUN if [ "$(dpkg --print-architecture)" = "amd64" ]; then \
-		echo "downloading amd" &&\
 		wget -O /tmp/faad2.deb http://launchpadlibrarian.net/335256796/faad_2.7-8+deb7u1build0.14.04.1_amd64.deb; \
 	elif [ "$(dpkg --print-architecture)" = "armhf" ]; then \
-		echo "downloading arm" &&\
 		wget -O /tmp/faad2.deb http://launchpadlibrarian.net/335256808/faad_2.7-8+deb7u1build0.14.04.1_armhf.deb; \
+	elif [ "$(dpkg --print-architecture)" = "arm64" ]; then \
+		wget -O /tmp/faad2.deb http://launchpadlibrarian.net/335256691/faad_2.7-8+deb7u1build0.14.04.1_arm64.deb; \
 	else \
 		exit 1; \
 	fi; \

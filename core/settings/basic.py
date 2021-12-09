@@ -10,6 +10,7 @@ from core import user_manager, redis
 from core.settings import storage
 from core.settings.settings import control
 from core.musiq import playback
+from core.settings.system import check_captive_portal
 
 
 def start() -> None:
@@ -25,6 +26,7 @@ def _check_internet() -> None:
         redis.set("has_internet", True)
     else:
         redis.set("has_internet", False)
+    check_captive_portal()
 
 
 @control
@@ -32,6 +34,13 @@ def set_voting_enabled(request: WSGIRequest) -> None:
     """Enables or disables voting based on the given value."""
     enabled = request.POST.get("value") == "true"
     storage.set("voting_enabled", enabled)
+
+
+@control
+def set_ip_checking(request: WSGIRequest) -> None:
+    """Enables or disables ip checking based on the given value."""
+    enabled = request.POST.get("value") == "true"
+    storage.set("ip_checking", enabled)
 
 
 @control

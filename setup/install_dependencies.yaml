@@ -1,4 +1,4 @@
-- name: Install gpg
+- name: apt update (may take some time) + install gpg 
   apt:
     update_cache: yes
     pkg:
@@ -19,6 +19,8 @@
     pkg:
     # python package management
     - python3-pip
+    # ping
+    - inetutils-ping
     # webserver
     - nginx
     # player
@@ -59,8 +61,6 @@
         pkg:
         #audio conversion
         - ffmpeg
-        #thumbnail embedding
-        - atomicparsley
     - name: "Install Youtube dependencies: Install python dependencies"
       pip:
         requirements: "{{ config.install_directory }}/requirements/youtube.txt"
@@ -95,6 +95,7 @@
     pkg:
     - dnsmasq
     - hostapd
+    - iptables
     - rfkill
 
 - name: Install screen visualization dependencies
@@ -191,6 +192,11 @@
       when: ansible_facts['architecture'] == 'armv7l'
       get_url:
         url: http://launchpadlibrarian.net/335256808/faad_2.7-8+deb7u1build0.14.04.1_armhf.deb
+        dest: /tmp/faad2.deb
+    - name: "Install rganalysis: Download faad2"
+      when: ansible_facts['architecture'] == 'armv8l'
+      get_url:
+        url: http://launchpadlibrarian.net/335256691/faad_2.7-8+deb7u1build0.14.04.1_arm64.deb
         dest: /tmp/faad2.deb
     - name: "Install rganalysis: Install faad2"
       apt:

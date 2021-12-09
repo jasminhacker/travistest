@@ -147,6 +147,7 @@ class SpotifySongProvider(SongProvider, Spotify):
             self.metadata["internal_url"] = result["uri"]
             self.metadata["external_url"] = result["external_urls"]["spotify"]
             self.metadata["stream_url"] = None
+            self.metadata["cached"] = False
         except KeyError:
             self.error = "No song found"
             return False
@@ -185,7 +186,7 @@ class SpotifySongProvider(SongProvider, Spotify):
 
         return external_url
 
-    def request_radio(self, request_ip: str) -> HttpResponse:
+    def request_radio(self, session_key: str) -> HttpResponse:
         result = self.web_client.get(
             "recommendations",
             params={

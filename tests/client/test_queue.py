@@ -1,4 +1,5 @@
 import json
+import logging
 
 from django.urls import reverse
 
@@ -47,7 +48,11 @@ class QueueTests(MusicTest):
         self._poll_musiq_state(lambda state: len(state["musiq"]["songQueue"]) == 2)
 
         # removing the same key another time should not change the queue length
+        # raise logging level temporarily to error, because the following request raises a warning
+        logging_level = logging.getLogger().level
+        logging.getLogger().setLevel(logging.ERROR)
         self.client.post(reverse("remove"), {"key": str(key)})
+        logging.getLogger().setLevel(logging_level)
         self._poll_musiq_state(lambda state: len(state["musiq"]["songQueue"]) == 2)
 
         # choosing a new key will again delete a song
@@ -141,22 +146,22 @@ class QueueVotingTests(MusicTest):
         key2 = state["musiq"]["songQueue"][1]["id"]
         key3 = state["musiq"]["songQueue"][2]["id"]
 
-        self.client.post(reverse("vote-up"), {"key": str(key2)})
-        self.client.post(reverse("vote-up"), {"key": str(key3)})
+        self.client.post(reverse("vote"), {"key": str(key2), "amount": 1})
+        self.client.post(reverse("vote"), {"key": str(key3), "amount": 1})
         self._poll_musiq_state(
             lambda state: [song["id"] for song in state["musiq"]["songQueue"]]
             == [key2, key3, key1]
         )
 
-        self.client.post(reverse("vote-up"), {"key": str(key1)})
+        self.client.post(reverse("vote"), {"key": str(key1), "amount": 1})
         self._poll_musiq_state(
             lambda state: [song["id"] for song in state["musiq"]["songQueue"]]
             == [key1, key2, key3]
         )
 
-        self.client.post(reverse("vote-down"), {"key": str(key2)})
-        self.client.post(reverse("vote-down"), {"key": str(key2)})
-        self.client.post(reverse("vote-down"), {"key": str(key1)})
+        self.client.post(reverse("vote"), {"key": str(key2), "amount": -1})
+        self.client.post(reverse("vote"), {"key": str(key2), "amount": -1})
+        self.client.post(reverse("vote"), {"key": str(key1), "amount": -1})
         self._poll_musiq_state(
             lambda state: [song["id"] for song in state["musiq"]["songQueue"]]
             == [key3, key1, key2]
@@ -170,7 +175,7 @@ class QueueVotingTests(MusicTest):
         key3 = state["musiq"]["songQueue"][2]["id"]
 
         for _ in range(3):
-            self.client.post(reverse("vote-down"), {"key": str(key2)})
+            self.client.post(reverse("vote"), {"key": str(key2), "amount": -1})
         self._poll_musiq_state(
             lambda state: [song["id"] for song in state["musiq"]["songQueue"]]
             == [key1, key3]
@@ -182,5 +187,5 @@ class QueueVotingTests(MusicTest):
         key = state["musiq"]["currentSong"]["queueKey"]
 
         for _ in range(3):
-            self.client.post(reverse("vote-down"), {"key": str(key)})
+            self.client.post(reverse("vote"), {"key": str(key), "amount": -1})
         self._poll_musiq_state(lambda state: len(state["musiq"]["songQueue"]) == 2)

@@ -15,12 +15,13 @@ from urllib.parse import parse_qs
 from urllib.parse import urlparse
 
 import requests
-import youtube_dl
+import yt_dlp
 from django.conf import settings
 from django.http.response import HttpResponse
 
 import core.musiq.song_utils as song_utils
 import core.settings.storage as storage
+from core.models import ArchivedSong
 from core.musiq import musiq
 from core.musiq.song_provider import SongProvider
 from core.musiq.playlist_provider import PlaylistProvider
@@ -32,14 +33,12 @@ if TYPE_CHECKING:
 @contextmanager
 def youtube_session() -> Iterator[requests.Session]:
     """This context opens a requests session and loads the youtube cookies file."""
-    session = requests.session()
 
     pickle_file = os.path.join(settings.BASE_DIR, "config/youtube_cookies.pickle")
-
     session = requests.session()
-    # Have youtube-dl deal with consent cookies etc to setup a valid session
-    extractor = youtube_dl.extractor.youtube.YoutubeIE()
-    extractor._downloader = youtube_dl.YoutubeDL()
+    # Have yt-dlp deal with consent cookies etc to setup a valid session
+    extractor = yt_dlp.extractor.youtube.YoutubeIE()
+    extractor._downloader = yt_dlp.YoutubeDL()
     extractor.initialize()
     session.cookies.update(extractor._downloader.cookiejar)
 
@@ -50,7 +49,7 @@ def youtube_session() -> Iterator[requests.Session]:
     except FileNotFoundError:
         pass
 
-    headers = {"User-Agent": youtube_dl.utils.random_user_agent()}
+    headers = {"User-Agent": yt_dlp.utils.random_user_agent()}
     session.headers.update(headers)
     yield session
 
@@ -59,46 +58,43 @@ def youtube_session() -> Iterator[requests.Session]:
 
 
 class YoutubeDLLogger:
-    """This logger class is used to log process of youtube-dl downloads."""
+    """This logger class is used to log process of yt-dlp downloads."""
 
     @classmethod
     def debug(cls, msg: str) -> None:
-        """This method is called if youtube-dl does debug level logging."""
+        """This method is called if yt-dlp does debug level logging."""
         logging.debug(msg)
 
     @classmethod
     def warning(cls, msg: str) -> None:
-        """This method is called if youtube-dl does warning level logging."""
+        """This method is called if yt-dlp does warning level logging."""
         logging.debug(msg)
 
     @classmethod
     def error(cls, msg: str) -> None:
-        """This method is called if youtube-dl does error level logging."""
+        """This method is called if yt-dlp does error level logging."""
         logging.error(msg)
 
 
 class Youtube:
     """This class contains code for both the song and playlist provider"""
 
-    atomicparsley_available = shutil.which("AtomicParsley") is not None
-
     @staticmethod
     def get_ydl_opts() -> Dict[str, Any]:
-        """This method returns a dictionary containing sensible defaults for youtube-dl options.
+        """This method returns a dictionary containing sensible defaults for yt-dlp options.
         It is roughly equivalent to the following command:
-        youtube-dl --format bestaudio[ext=m4a]/best[ext=m4a] --output '%(id)s.%(ext)s' \
+        yt-dlp --format bestaudio[ext=m4a]/best[ext=m4a] --output '%(id)s.%(ext)s' \
             --no-playlist --no-cache-dir --write-thumbnail --default-search auto \
             --add-metadata --embed-thumbnail
         """
-        postprocessors = [{"key": "FFmpegMetadata"}]
-        if Youtube.atomicparsley_available:
-            postprocessors.append(
-                {
-                    "key": "EmbedThumbnail",
-                    # overwrite any thumbnails already present
-                    "already_have_thumbnail": True,
-                }
-            )
+        postprocessors = [
+            {"key": "FFmpegMetadata"},
+            {
+                "key": "EmbedThumbnail",
+                # overwrite any thumbnails already present
+                "already_have_thumbnail": True,
+            },
+        ]
         return {
             "format": "bestaudio[ext=m4a]/best[ext=m4a]",
             "outtmpl": os.path.join(settings.SONGS_CACHE_DIR, "%(id)s.%(ext)s"),
@@ -171,20 +167,17 @@ class YoutubeSongProvider(SongProvider, Youtube):
 
         # directly use the search extractors entry function so we can process each result
         # as soon as it's available instead of waiting for all of them
-        extractor = youtube_dl.extractor.youtube.YoutubeSearchIE()
-        extractor._downloader = youtube_dl.YoutubeDL(self.ydl_opts)
+        extractor = yt_dlp.extractor.youtube.YoutubeSearchIE()
+        extractor._downloader = yt_dlp.YoutubeDL(self.ydl_opts)
         extractor.initialize()
-        for entry in extractor._entries(self.query, 50):
+        for entry in extractor._search_results(self.query):
             if song_utils.is_forbidden(entry["title"]):
                 continue
             try:
-                with youtube_dl.YoutubeDL(self.ydl_opts) as ydl:
+                with yt_dlp.YoutubeDL(self.ydl_opts) as ydl:
                     self.info_dict = ydl.extract_info(entry["id"], download=False)
                 break
-            except (
-                youtube_dl.utils.ExtractorError,
-                youtube_dl.utils.DownloadError,
-            ) as e:
+            except (yt_dlp.utils.ExtractorError, yt_dlp.utils.DownloadError) as e:
                 logging.warning("error during availability check for %s:", entry["id"])
                 logging.warning(e)
         else:
@@ -200,7 +193,7 @@ class YoutubeSongProvider(SongProvider, Youtube):
         location = None
 
         try:
-            with youtube_dl.YoutubeDL(self.ydl_opts) as ydl:
+            with yt_dlp.YoutubeDL(self.ydl_opts) as ydl:
                 ydl.download([self.get_external_url()])
 
             location = self._get_path()
@@ -224,7 +217,7 @@ class YoutubeSongProvider(SongProvider, Youtube):
                 else:
                     raise
 
-        except youtube_dl.utils.DownloadError as e:
+        except yt_dlp.utils.DownloadError as e:
             error = e
 
         if error is not None or location is None:
@@ -244,13 +237,16 @@ class YoutubeSongProvider(SongProvider, Youtube):
     def get_metadata(self) -> "Metadata":
         if not self.id:
             raise ValueError()
-        metadata = song_utils.get_metadata(self._get_path())
-
+        try:
+            archived_song = ArchivedSong.objects.get(url=self.get_external_url())
+            metadata = archived_song.get_metadata()
+        except ArchivedSong.DoesNotExist:
+            metadata = song_utils.get_metadata(self._get_path())
+        metadata["internal_url"] = self.get_internal_url()
+        metadata["external_url"] = self.get_external_url()
+        metadata["stream_url"] = None
         if not metadata["title"]:
             metadata["title"] = metadata["external_url"]
-        metadata["internal_url"] = self.get_internal_url()
-        metadata["external_url"] = "https://www.youtube.com/watch?v=" + self.id
-        metadata["stream_url"] = None
 
         return metadata
 
@@ -291,7 +287,7 @@ class YoutubeSongProvider(SongProvider, Youtube):
         # discard everything after the first v= parameter
         return "https://www.youtube.com" + cast(str, url).split("&")[0]
 
-    def request_radio(self, request_ip: str) -> HttpResponse:
+    def request_radio(self, session_key: str) -> HttpResponse:
         if not self.id:
             raise ValueError()
         radio_id = "RD" + self.id
@@ -374,14 +370,14 @@ class YoutubePlaylistProvider(PlaylistProvider, Youtube):
                 "https://www.youtube.com/watch?v=" + self.id[2:] + "&list=" + self.id
             )
         else:
-            # if only given the id, youtube-dl returns an info dict resolving this id to a url.
+            # if only given the id, yt-dlp returns an info dict resolving this id to a url.
             # we want to receive the playlist entries directly, so we query the playlist url
             query_url = "https://www.youtube.com/playlist?list=" + self.id
 
         try:
-            with youtube_dl.YoutubeDL(self.ydl_opts) as ydl:
+            with yt_dlp.YoutubeDL(self.ydl_opts) as ydl:
                 info_dict = ydl.extract_info(query_url, download=False)
-        except (youtube_dl.utils.ExtractorError, youtube_dl.utils.DownloadError) as e:
+        except (yt_dlp.utils.ExtractorError, yt_dlp.utils.DownloadError) as e:
             self.error = e
             return False
 

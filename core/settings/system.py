@@ -202,10 +202,30 @@ def enable_wifi_protection(_request: WSGIRequest) -> None:
     subprocess.call(["sudo", "/usr/local/sbin/raveberry/enable_wifi_protection"])
 
 
+def check_captive_portal() -> None:
+    """Checks whether captive portal should be enabled and acts accordingly."""
+    try:
+        hotspot_enabled = (
+            subprocess.call(["/usr/local/sbin/raveberry/hotspot_enabled"]) != 0
+        )
+        if not hotspot_enabled:
+            return
+        tunneling_enabled = (
+            subprocess.call(["sudo", "/usr/local/sbin/raveberry/tunneling_enabled"])
+            != 0
+        )
+        if not redis.get("has_internet") or not tunneling_enabled:
+            subprocess.call(["sudo", "/usr/local/sbin/raveberry/enable_captive_portal"])
+    except FileNotFoundError:
+        # without a hotspot, captive portal makes no sense
+        pass
+
+
 @control
 def disable_tunneling(_request: WSGIRequest) -> None:
     """Disable forwarding of packets to the other network (probably the internet)."""
     subprocess.call(["sudo", "/usr/local/sbin/raveberry/disable_tunneling"])
+    check_captive_portal()
 
 
 @control
@@ -214,6 +234,7 @@ def enable_tunneling(_request: WSGIRequest) -> None:
     Enables clients connected to the hotspot to browse the internet (if available)."""
     subprocess.call(["sudo", "/usr/local/sbin/raveberry/disable_tunneling"])
     subprocess.call(["sudo", "/usr/local/sbin/raveberry/enable_tunneling"])
+    check_captive_portal()
 
 
 @control

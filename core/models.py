@@ -1,10 +1,15 @@
 """Contains all database models."""
+from typing import TYPE_CHECKING
 
-from django.db import models
+from django.contrib.postgres.indexes import GinIndex, OpClass
+from django.db import models, connection
 from django.db.models import QuerySet
 
 import core.musiq.song_queue
 import core.musiq.song_utils as song_utils
+
+if TYPE_CHECKING:
+    from core.musiq.song_utils import Metadata
 
 
 # Create your models here.
@@ -19,7 +24,7 @@ class Tag(models.Model):
 
 
 class Counter(models.Model):
-    """Stores the visitors counter. Only has one elment."""
+    """Stores the visitors counter. Only has one element."""
 
     value = models.IntegerField()
 
@@ -34,7 +39,9 @@ class ArchivedSong(models.Model):
     url = models.CharField(max_length=2000, unique=True)
     artist = models.CharField(max_length=1000)
     title = models.CharField(max_length=1000)
+    duration = models.FloatField()
     counter = models.IntegerField()
+    cached = models.BooleanField()
 
     def __str__(self) -> str:
         return self.title + " (" + self.url + "): " + str(self.counter)
@@ -42,6 +49,31 @@ class ArchivedSong(models.Model):
     def displayname(self) -> str:
         """Formats the song using the utility method."""
         return song_utils.displayname(self.artist, self.title)
+
+    def get_metadata(self) -> "Metadata":
+        return {
+            "artist": self.artist,
+            "title": self.title,
+            "duration": self.duration,
+            "external_url": self.url,
+            "cached": self.cached,
+        }
+
+    class Meta:
+        indexes = (
+            [
+                GinIndex(
+                    OpClass("artist", name="gin_trgm_ops"),
+                    name="core_archivedsong_artist_trgm",
+                ),
+                GinIndex(
+                    OpClass("title", name="gin_trgm_ops"),
+                    name="core_archivedsong_title_trgm",
+                ),
+            ]
+            if connection.vendor == "postgresql"
+            else []
+        )
 
 
 class ArchivedPlaylist(models.Model):
@@ -86,6 +118,18 @@ class ArchivedQuery(models.Model):
     def __str__(self) -> str:
         return self.query
 
+    class Meta:
+        indexes = (
+            [
+                GinIndex(
+                    OpClass("query", "gin_trgm_ops"),
+                    name="core_archivedquery_query_trgm",
+                )
+            ]
+            if connection.vendor == "postgresql"
+            else []
+        )
+
 
 class ArchivedPlaylistQuery(models.Model):
     """Stores the queries from the musiq page and the ArchivedPlaylist it lead to."""
@@ -111,7 +155,7 @@ class QueuedSong(models.Model):
     stream_url = models.CharField(max_length=2000, blank=True, null=True)
     artist = models.CharField(max_length=1000)
     title = models.CharField(max_length=1000)
-    duration = models.IntegerField()
+    duration = models.FloatField()
     objects = core.musiq.song_queue.SongQueue()
 
     def __str__(self) -> str:
@@ -133,7 +177,7 @@ class CurrentSong(models.Model):
     votes = models.IntegerField()
     artist = models.CharField(max_length=1000)
     title = models.CharField(max_length=1000)
-    duration = models.IntegerField()
+    duration = models.FloatField()
     internal_url = models.CharField(max_length=2000)
     external_url = models.CharField(max_length=2000)
     stream_url = models.CharField(max_length=2000, blank=True, null=True)
@@ -158,7 +202,7 @@ class RequestLog(models.Model):
     playlist = models.ForeignKey(
         "ArchivedPlaylist", on_delete=models.SET_NULL, blank=True, null=True
     )
-    address = models.CharField(max_length=50)
+    session_key = models.CharField(max_length=50)
 
     def item_displayname(self) -> str:
         """Returns the displayname of the song or the title of the playlist"""
@@ -170,10 +214,10 @@ class RequestLog(models.Model):
 
     def __str__(self) -> str:
         if self.song is not None:
-            return self.address + ": " + self.song.displayname()
+            return self.session_key + ": " + self.song.displayname()
         if self.playlist is not None:
-            return self.address + ": " + self.playlist.title
-        return self.address + ": <None>"
+            return self.session_key + ": " + self.playlist.title
+        return self.session_key + ": <None>"
 
 
 class PlayLog(models.Model):
