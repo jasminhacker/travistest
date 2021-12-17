@@ -6,15 +6,15 @@ with open("raveberry/VERSION") as f:
 with open("README.md") as f:
     long_description = f.read()
 
-with open("requirements/common.txt") as f:
+with open("backend/requirements/common.txt") as f:
     run_packages = f.read().splitlines()
-with open("requirements/youtube.txt") as f:
+with open("backend/requirements/youtube.txt") as f:
     run_packages.extend(f.read().splitlines())
 
-with open("requirements/install.txt") as f:
+with open("backend/requirements/install.txt") as f:
     install_packages = f.read().splitlines()
 
-with open("requirements/screenvis.txt") as f:
+with open("backend/requirements/screenvis.txt") as f:
     screenvis_packages = f.read().splitlines()
 
 setuptools.setup(
