@@ -15,7 +15,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 'lts/*'
-      - run: pip install -r requirements/frontend_build.txt
+      - run: pip install -r backend/requirements/frontend_build.txt
       - run: yarn --cwd frontend install
       - run: yarn --cwd frontend build
       - uses: actions/upload-artifact@v2
@@ -40,7 +40,7 @@ jobs:
         with:
           name: frontend-files
           path: backend/static/
-      - run: pip install -r requirements/frontend_test.txt
+      - run: pip install -r backend/requirements/frontend_test.txt
       - run: yarn --cwd frontend install
       - run: yarn --cwd frontend test
   test-backend:
@@ -78,7 +78,7 @@ jobs:
         with:
           python-version: '3.9'
       - name: Install pip dependencies
-        run: pip install -r requirements/backend_test.txt
+        run: pip install -r backend/requirements/backend_test.txt
       - run: sudo apt-get update
       - run: sudo apt-get -y install ffmpeg mopidy gstreamer1.0-plugins-bad
       - name: Start mopidy
@@ -98,7 +98,7 @@ jobs:
         with:
           python-version: '3.9'
       - name: Install pip dependencies
-        run: pip install -r requirements/install.txt
+        run: pip install -r backend/requirements/install.txt
       - run: sudo apt-get update
       - run: sudo apt-get install -y expect
       - name: remove pyyaml
@@ -157,8 +157,7 @@ jobs:
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-          repository_url: https://test.pypi.org/legacy/
+          password: ${{ secrets.PYPI_API_TOKEN }}
   docker-publish:
     runs-on: ubuntu-latest
     needs: [test-frontend, test-backend, test-install, check-versions]
