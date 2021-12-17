@@ -19,7 +19,7 @@ with open("backend/requirements/screenvis.txt") as f:
 
 setuptools.setup(
     name="raveberry_test",
-    version="version",
+    version=version,
     author="Jonathan Hacker",
     author_email="raveberry@jhacker.de",
     description="A multi-user music server with a focus on participation",
