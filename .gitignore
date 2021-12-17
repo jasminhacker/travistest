@@ -1,0 +1,47 @@
+__pycache__
+*.pyc
+*.swp
+
+/backend/db.sqlite3
+
+/backend/test_cache
+/backend/test_library
+
+# mypy
+/.mypy_cache/
+/.dmypy.json
+
+# python virtual environment
+.venv/
+
+# frontend libraries
+/frontend/node_modules/
+# frontend generated files
+/frontend/js
+/frontend/dist
+/frontend/head.html
+/frontend/body.html
+
+
+# generated static files
+/backend/static/admin
+/backend/static/bundle.js
+/backend/static/*.css
+/backend/static/*.css.map
+/backend/static/*.woff2
+/backend/static/apk/shareberry.apk
+
+# generated frontend
+/frontend/js
+/frontend/dist
+/frontend/head.html
+/frontend/body.html
+
+# instance-specifig config files
+/backend/config/secret_key.txt
+/backend/config/homewifi
+/backend/config/youtube_cookies.pickle
+/backend/config/cache_dir
+
+# log files
+/backend/logs/*.log

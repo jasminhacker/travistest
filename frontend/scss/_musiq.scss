@@ -1,0 +1,299 @@
+#content>ul {
+	margin-bottom: 10px;
+}
+
+// song input
+#music-input-card {
+	padding-left: 5px;
+	padding-right: 5px;
+	display: inline-flex;
+}
+#music-input-card>i {
+	margin: 7px 2px;
+	font-size: x-large;
+}
+#music-input-card .anim-container {
+	margin: 7px 2px;
+	height: 1.5rem;
+	width: 1.5rem;
+	min-width: 1.5rem;
+	font-size:.375rem;
+}
+#music-input {
+	min-width: 100px;
+	padding: 6px;
+	padding-right: 26px;
+}
+
+span.clearable {
+	position: relative;
+	margin: 0px 5px;
+	width: 100%;
+}
+span.clearable i {
+	position: absolute;
+	display: block;
+	top: 10px;
+	right: 10px;
+	font-size: large;
+	cursor: pointer;
+	opacity: 0;
+	transition: opacity 0.2s ease;
+}
+span.clearable input {
+	padding-right: 16px;
+	box-sizing: border-box;
+}
+#clearbutton {
+	// make the click area bigger but keep centered
+	margin: -10px -10px;
+	padding: 10px 10px;
+}
+
+// autocomplete
+.ui-autocomplete {
+    position: absolute;
+    z-index: 1000;
+    cursor: default;
+    padding: 0;
+    margin-top: 2px;
+    list-style: none;
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+	color: #495057;
+	border-radius: 5px;
+	box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+	max-height: 200px;
+	overflow-y: auto;
+}
+.ui-autocomplete > li {
+	padding: 3px 5px;
+}
+.ui-autocomplete > li.ui-state-focus {
+  background-color: #DDD;
+}
+.ui-helper-hidden-accessible {
+  display: none;
+}
+
+.ui-menu-item-with-icon {
+	display: flex;
+	justify-content: space-between;
+	word-break: break-all;
+}
+.autocomplete-info {
+	color: var(--normal-text);
+	flex: 0 0 auto;
+	padding-left: 5px;
+}
+.insert-icon {
+	padding-left: 5px;
+}
+.suggestion-type {
+	width: 20px;
+	padding-right: 5px;
+	text-align: center;
+}
+.additional-keywords {
+	padding-left: 5px;
+	color: var(--silent-text);
+	font-style: italic;
+}
+.forbidden-keywords {
+	padding-left: 5px;
+	color: var(--silent-text);
+	text-decoration: line-through;
+}
+@keyframes placeholderShimmer {
+	0% {
+		background-position: 0 0;
+	}
+	100% {
+		background-position: 50000px 0;
+	}
+}
+.placeholder {
+	// The animation does not loop perfectly. Use a long duration to avoid running into a janky transition.
+	animation-duration: 100s;
+	animation-iteration-count: infinite;
+	animation-timing-function: linear;
+	animation-name: placeholderShimmer;
+	background: linear-gradient(to right, #eeeeee 0px, #cccccc 50px, #eeeeee 100px);
+	display: inline-block;
+	height: 1em;
+}
+
+// current song
+#current-song {
+	text-align: center;
+	font-size: larger;
+	padding-left: 8px;
+	padding-right: 8px;
+}
+
+// audio stream
+#stream-control {
+	min-width: 32px;
+	padding-right: 5px;
+	font-size: x-large;
+	float: left;
+}
+#stream-control.fa-volume-mute {
+	// move muted and not muted speakers to the same position
+	margin-left: -1.5px;
+}
+
+#progress-bar-container {
+	padding: 0px;
+}
+#progress-bar-container>.progress {
+	height: 5px;
+	background-color: var(--list-border);
+}
+#progress-bar {
+	width: 0%;
+	transition: none;
+}
+
+#song-votes {
+	text-align: center;
+	font-size: x-large;
+}
+#song-controls {
+	text-align: center;
+}
+#song-control-icons>i {
+	padding-top: 8px;
+	padding-bottom: 8px;
+	padding-left: 10px;
+	padding-right: 10px;
+	display: inline-block;
+	font-size: x-large;
+}
+#song-control-icons .anim-container {
+	display: inline-block;
+
+	height: 1.5rem;
+	width: 1.5rem;
+	min-width: 1.5rem;
+
+	// css hack to center play button
+	margin-right: 31px;
+}
+#additional-controls {
+	text-align: center;
+	display: flex;
+	justify-content: space-between;
+}
+#additional-controls i {
+	font-size: x-large;
+}
+#total-time-container {
+	display: flex;
+	width: 25%;
+}
+#total-time {
+	margin-left: 5px;
+}
+#volume-slider {
+	max-width: 200px;
+	width: 80%;
+}
+#volume-slider-container {
+	width: 50%;
+}
+#queue-controls i {
+	padding-left: 10px;
+	padding-right: 10px;
+}
+#queue-controls {
+	width: 25%;
+	display: flex;
+	justify-content: flex-end;
+}
+
+// song queue
+$entry-height: 50px;
+#song-queue>li {
+	padding: 5px;
+}
+.queue-entry {
+	display: flex;
+	flex-wrap: wrap;
+	flex-direction: column;
+	height: $entry-height;
+}
+.download-icon {
+	position: relative;
+	height: 100%;
+	width: 50px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	fill: var(--normal-text);
+}
+.download-icon svg {
+	height: 70%;
+}
+.download-overlay {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+    animation: downloading 2s linear infinite;
+	background: linear-gradient(transparent 50%, var(--elevated-background) 0%);
+	background-size: 200% 200%;
+}
+@keyframes downloading {
+    0%{background-position:0% 100%}
+    60%{background-position:0% 0%}
+    100%{background-position:0% 0%}
+}
+.queue-index {
+	flex: 0 0 100%;
+	width: $entry-height;
+
+	line-height: $entry-height;
+	text-align: center;
+
+	font-size: larger;
+	font-weight: bold;
+}
+.queue-title, .queue-info {
+	word-break: break-all;
+	overflow: hidden;
+	flex: 0 0 50%;
+	order: 1;
+	width: calc(100% - #{$entry-height});
+	padding-left: 5px;
+	padding-right: 5px;
+}
+.queue-info-time {
+	font-size: small;
+}
+.queue-info-controls {
+	float: right;
+}
+.queue-info-controls>i {
+	padding-left: 8px;
+	padding-right: 8px;
+}
+
+.vote-up.pressed {
+	color: var(--upvote);
+}
+.vote-down.pressed {
+	color: var(--downvote);
+}
+
+#vote-timeout {
+	width: 100%;
+	height: 5px;
+}
+#vote-timeout-bar {
+	height: 100%;
+}
+
+#title-modal .modal-text {
+	display: flex;
+	flex-direction: column;
+}
