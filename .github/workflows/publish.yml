@@ -44,7 +44,7 @@ jobs:
         run: RUST_TARGET="${{ matrix.target }}" envsubst \$RUST_TARGET < build-wheels.sh > build-wheels.sh
       - name: Build wheels
         run: |
-      - docker run --rm -v "$PWD":/io -w /io messense/manylinux2014-cross:${{ matrix.arch }} bash build-wheels.sh
+        #- docker run --rm -v "$PWD":/io -w /io messense/manylinux2014-cross:${{ matrix.arch }} bash build-wheels.sh
       - run: ls -la dist/
 
         #pypi-publish:
