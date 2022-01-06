@@ -7,5 +7,3 @@ python3.9 -m crossenv "/opt/python/cp39-cp39/bin/python3" --cc $TARGET_CC --cxx 
 . cross_venv/bin/activate
 pip install wheel setuptools_rust
 python setup.py sdist bdist_wheel --py-limited-api=cp39
-ls -la dist/
-

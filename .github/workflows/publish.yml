@@ -13,6 +13,22 @@ jobs:
           python-version: '3.9'
       # TODO
   build:
+    strategy:
+      matrix:
+        python: ["3.8", "3.9", "3.10"]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: {{ matrix.python }}
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          override: true
+      - runs: pip install wheel setuptools_rust
+      - runs: python setup.py sdist bdist_wheel
+      - runs: ls -la dist/
   crosscompile:
     strategy:
       matrix:
@@ -28,6 +44,7 @@ jobs:
       - name: Build wheels
         run: |
       - docker run --rm -v "$PWD":/io -w /io messense/manylinux2014-cross:${{matrix.platform.arch}} bash build-wheels.sh
+      - runs: ls -la dist/
 
         #pypi-publish:
         #  runs-on: ubuntu-latest
