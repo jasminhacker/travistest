@@ -26,9 +26,9 @@ jobs:
         with:
           profile: minimal
           override: true
-      - runs: pip install wheel setuptools_rust
-      - runs: python setup.py sdist bdist_wheel
-      - runs: ls -la dist/
+      - run: pip install wheel setuptools_rust
+      - run: python setup.py sdist bdist_wheel
+      - run: ls -la dist/
   crosscompile:
     strategy:
       matrix:
@@ -44,7 +44,7 @@ jobs:
       - name: Build wheels
         run: |
       - docker run --rm -v "$PWD":/io -w /io messense/manylinux2014-cross:${{matrix.platform.arch}} bash build-wheels.sh
-      - runs: ls -la dist/
+      - run: ls -la dist/
 
         #pypi-publish:
         #  runs-on: ubuntu-latest
