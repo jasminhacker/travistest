@@ -24,6 +24,7 @@ jobs:
           python-version: ${{ matrix.python }}
       - uses: actions-rs/toolchain@v1
         with:
+          toolchain: stable
           profile: minimal
           override: true
       - run: pip install wheel setuptools_rust
@@ -33,18 +34,19 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        include:
-          - target: "aarch64-unknown-linux-gnu"
-            arch: "aarch64"
-          - target: "armv7-unknown-linux-gnueabihf"
-            arch: armv7
+        platform: [
+          { target: "aarch64-unknown-linux-gnu", arch: "aarch64" },
+          { target: "armv7-unknown-linux-gnueabihf", arch: "armv7" },
+        ]
     steps:
       - uses: actions/checkout@v2
       - name: Set rust target
-        run: RUST_TARGET="${{ matrix.target }}" envsubst \$RUST_TARGET < build-wheels.sh > build-wheels.sh
+        run: RUST_TARGET="${{ matrix.platform.target }}" envsubst \$RUST_TARGET < build-wheels.sh > build-wheels.sh
+      - run: cat build-wheels.sh
       - name: Build wheels
-        run: |
-        #- docker run --rm -v "$PWD":/io -w /io messense/manylinux2014-cross:${{ matrix.arch }} bash build-wheels.sh
+        run: ":"
+        #run: |
+        #- docker run --rm -v "$PWD":/io -w /io messense/manylinux2014-cross:${{ matrix.platform.arch }} bash build-wheels.sh
       - run: ls -la dist/
 
         #pypi-publish:
