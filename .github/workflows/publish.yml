@@ -30,6 +30,11 @@ jobs:
       - run: pip install wheel setuptools_rust
       - run: python setup.py sdist bdist_wheel
       - run: ls -la dist/
+      - uses: actions/upload-artifact@v2
+        with:
+          name: dist
+          path: |
+            dist/static/*
   crosscompile:
     runs-on: ubuntu-latest
     strategy:
@@ -45,20 +50,24 @@ jobs:
       - run: cat build-wheels.sh
       - name: Build wheels
         run: docker run --rm -v "$PWD":/io -w /io messense/manylinux2014-cross:${{ matrix.platform.arch }} bash build-wheels.sh
+      - uses: actions/upload-artifact@v2
+        with:
+          name: dist
+          path: |
+            dist/static/*
+  publish:
+    runs-on: ubuntu-latest
+    needs: [build, cross]
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: dist
+          path: dist/
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
       - run: ls -la dist/
-
-        #pypi-publish:
-        #  runs-on: ubuntu-latest
-        #  needs: [build, cross]
-        #  steps:
-        #    - uses: actions/download-artifact@v2
-        #      with:
-        #        name: frontend-files
-        #        path: backend/static/
-        #    - uses: actions/setup-python@v2
-        #      with:
-        #        python-version: '3.9'
-        #    - name: Publish to PyPI
-        #      uses: pypa/gh-action-pypi-publish@release/v1
-        #      with:
-        #        password: ${{ secrets.PYPI_API_TOKEN }}
+        #- name: Publish to PyPI
+        #  uses: pypa/gh-action-pypi-publish@release/v1
+        #  with:
+        #    password: ${{ secrets.PYPI_API_TOKEN }}
