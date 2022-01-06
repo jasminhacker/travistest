@@ -40,10 +40,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Set rust target
-        run: RUST_TARGET="${{matrix.platform.target}}" envsubst \$RUST_TARGET < build-wheels.sh > build-wheels.sh
+        run: RUST_TARGET="${{ matrix.platform.target }}" envsubst \$RUST_TARGET < build-wheels.sh > build-wheels.sh
       - name: Build wheels
         run: |
-      - docker run --rm -v "$PWD":/io -w /io messense/manylinux2014-cross:${{matrix.platform.arch}} bash build-wheels.sh
+      - docker run --rm -v "$PWD":/io -w /io messense/manylinux2014-cross:${{ matrix.platform.arch }} bash build-wheels.sh
       - run: ls -la dist/
 
         #pypi-publish:
