@@ -33,17 +33,18 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        platform: [
-          { target: "aarch64-unknown-linux-gnu", arch: "aarch64" },
-          { target: "armv7-unknown-linux-gnueabihf", arch: "armv7" },
-        ]
+        include:
+          - target: "aarch64-unknown-linux-gnu"
+            arch: "aarch64"
+          - target: "armv7-unknown-linux-gnueabihf"
+            arch: armv7
     steps:
       - uses: actions/checkout@v2
       - name: Set rust target
-        run: RUST_TARGET="${{ matrix.platform.target }}" envsubst \$RUST_TARGET < build-wheels.sh > build-wheels.sh
+        run: RUST_TARGET="${{ matrix.target }}" envsubst \$RUST_TARGET < build-wheels.sh > build-wheels.sh
       - name: Build wheels
         run: |
-      - docker run --rm -v "$PWD":/io -w /io messense/manylinux2014-cross:${{ matrix.platform.arch }} bash build-wheels.sh
+      - docker run --rm -v "$PWD":/io -w /io messense/manylinux2014-cross:${{ matrix.arch }} bash build-wheels.sh
       - run: ls -la dist/
 
         #pypi-publish:
