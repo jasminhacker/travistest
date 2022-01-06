@@ -1,2 +1,0 @@
-class RenderingStoppedException(Exception):
-    pass

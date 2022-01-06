@@ -1,44 +1,39 @@
-import setuptools
+from setuptools import setup
+from setuptools_rust import Binding, RustExtension, Strip
 
-with open("backend/VERSION") as f:
-    version = f.read().strip()
+version = None
+with open("Cargo.toml") as f:
+    for line in f.readlines():
+        if line.startswith("version = "):
+            version = line.split()[-1].strip('"')
 
 with open("README.md") as f:
     long_description = f.read()
 
-with open("backend/requirements/common.txt") as f:
-    run_packages = f.read().splitlines()
-with open("backend/requirements/youtube.txt") as f:
-    run_packages.extend(f.read().splitlines())
-
-with open("backend/requirements/install.txt") as f:
-    install_packages = f.read().splitlines()
-
-with open("backend/requirements/screenvis.txt") as f:
-    screenvis_packages = f.read().splitlines()
-
-setuptools.setup(
-    name="raveberry_test",
-    version=version,
+setup(
+    name="raveberry-visualization",
+    version="0.1.0",
     author="Jonathan Hacker",
     author_email="raveberry@jhacker.de",
-    description="A multi-user music server with a focus on participation",
+    description="TODO",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/raveberry_test/raveberry",
+    url="https://github.com/raveberry/visualization",
     classifiers=[
         "Development Status :: 4 - Beta",
-        "Framework :: Django",
         "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
         "Programming Language :: Python :: 3",
     ],
-    packages=["raveberry_test"],
+    packages=["raveberry_visualization"],
     include_package_data=True,
     python_requires=">=3.8",
-    extras_require={
-        "install": install_packages,
-        "run": run_packages,
-        "screenvis": screenvis_packages,
-    },
-    scripts=["bin/raveberry"],
+    rust_extensions=[
+        RustExtension(
+            "raveberry_visualization.raveberry_visualization",
+            binding=Binding.PyO3,
+            strip=Strip.All,
+        )
+    ],
+    setup_requires=["setuptools-rust>=0.12.1"],
+    zip_safe=False,
 )
