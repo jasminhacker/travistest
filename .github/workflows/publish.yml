@@ -12,62 +12,52 @@ jobs:
         with:
           python-version: '3.9'
       # TODO
-  build:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python: ["3.8", "3.9", "3.10"]
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python }}
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          override: true
-      - run: pip install wheel setuptools_rust
-      - run: python setup.py sdist bdist_wheel
-      - run: ls -la dist/
-      - uses: actions/upload-artifact@v2
-        with:
-          name: dist
-          path: |
-            dist/static/*
+      #build:
+      #  runs-on: ubuntu-latest
+      #  strategy:
+      #    matrix:
+      #      python: ["3.8", "3.9", "3.10"]
+      #  steps:
+      #    - uses: actions/checkout@v2
+      #    - uses: actions/setup-python@v2
+      #      with:
+      #        python-version: ${{ matrix.python }}
+      #    - uses: actions-rs/toolchain@v1
+      #      with:
+      #        toolchain: stable
+      #        profile: minimal
+      #        override: true
+      #    - run: pip install wheel setuptools_rust
+      #    - run: python setup.py sdist bdist_wheel
+      #    - run: ls -la dist/
+      #    - uses: actions/upload-artifact@v2
+      #      with:
+      #        name: dist
+      #        path: |
+      #          dist/static/*
   crosscompile:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        platform: [
-          { target: "aarch64-unknown-linux-gnu", arch: "aarch64" },
-          { target: "armv7-unknown-linux-gnueabihf", arch: "armv7" },
-        ]
     steps:
-      - uses: actions/checkout@v2
-      - name: Set rust target
-        run: RUST_TARGET="${{ matrix.platform.target }}" envsubst \$RUST_TARGET < build-wheels.template > build-wheels.sh
-      - run: cat build-wheels.sh
-      - name: Build wheels
-        run: docker run --rm -v "$PWD":/io -w /io messense/manylinux2014-cross:${{ matrix.platform.arch }} bash build-wheels.sh
-      - uses: actions/upload-artifact@v2
+      - name: Setup python
+        uses: actions/setup-python@v2
         with:
-          name: dist
-          path: |
-            dist/static/*
-  publish:
-    runs-on: ubuntu-latest
-    needs: [build, cross]
-    steps:
-      - uses: actions/download-artifact@v2
+          python-version: 3.8
+      - uses: actions-rs/toolchain@v1
         with:
-          name: dist
-          path: dist/
-      - uses: actions/setup-python@v2
-        with:
-          python-version: '3.9'
-      - run: ls -la dist/
-        #- name: Publish to PyPI
-        #  uses: pypa/gh-action-pypi-publish@release/v1
-        #  with:
-        #    password: ${{ secrets.PYPI_API_TOKEN }}
+          profile: minimal
+          toolchain: stable
+          override: true
+      - name: Install cross
+        run: cargo install cross
+      - run: pip install setuptools-rust
+      - name: Build wheel using cross
+        shell: bash
+        env:
+          CARGO: cross
+          CARGO_BUILD_TARGET: aarch64-unknown-linux-gnu
+          PYO3_CROSS_LIB_DIR: /opt/python/cp38-cp38/lib
+        run: |
+          docker build -t cross-pyo3:aarch64-unknown-linux-gnu .
+          python -m pip install wheel
+          python setup.py bdist_wheel --plat-name manylinux2014_aarch64
+          ls -la dist/
