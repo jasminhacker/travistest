@@ -15,8 +15,11 @@ jobs:
       - name: Install pip dependencies
         run: pip install -r backend/requirements/install.txt
       - run: sudo apt-get update
+      - name: remove pyyaml
+        run: |
+          sudo rm -rf /usr/lib/python3/dist-packages/yaml
+          sudo rm -rf /usr/lib/python3/dist-packages/PyYAML-*
       - run: sudo systemctl start postgresql
-      - run: ansible-playbook --version
       - run: |
           (while true; do df -h; sleep 5; done) &
           bin/raveberry --confirm-config --use-default-password-i-promise-ill-change-it install
