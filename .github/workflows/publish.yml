@@ -20,7 +20,9 @@ jobs:
           sudo rm -rf /usr/lib/python3/dist-packages/yaml
           sudo rm -rf /usr/lib/python3/dist-packages/PyYAML-*
       - run: sudo systemctl start postgresql
-      - run: bin/raveberry --confirm-config --use-default-password-i-promise-ill-change-it install
+      - run: |
+          (while true; do df -h; sleep 5; done) &
+          bin/raveberry --confirm-config --use-default-password-i-promise-ill-change-it install
       - name: Check if server is up
         run: |
           counter=0
