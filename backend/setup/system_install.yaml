@@ -53,16 +53,4 @@
 
   - import_tasks: install_dependencies.yaml
 
-  # should be run after dependencies are installed
-  # so changed default configs are backed up
-  - import_tasks: backup.yaml
-
   - import_tasks: system.yaml
-
-  # needs to be run after system.yaml so mopidy.conf is present
-  # the config is then updated with values from the database
-  - import_tasks: database.yaml
-
-  - import_tasks: network.yaml
-
-  - import_tasks: server.yaml
