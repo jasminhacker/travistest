@@ -51,6 +51,18 @@
       src: "{{ (config_file | default('../config/raveberry.yaml')) }}"
       dest: "{{ config.install_directory }}/config/raveberry.yaml"
 
-  - import_tasks: install_dependencies.yaml
+  - name: apt update (may take some time) + install gpg
+    apt:
+      update_cache: yes
 
-  - import_tasks: system.yaml
+  - name: Install apt dependencies (may take some time)
+    apt:
+      pkg:
+      # python package management
+      - pulseaudio
+
+  - name: Bluetooth permissions for pulse
+    user:
+      name: pulse
+      groups: bluetooth
+      append: yes
