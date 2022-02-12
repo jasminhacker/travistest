@@ -1,0 +1,242 @@
+// basic theming
+@import "imports";
+
+// https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-color-scheme
+// light theme is the default, preference would only say 'dark' if the user explicitly set it
+// dark should be the default for Raveberry, so we can't use preferences without js logic
+
+// default
+:root {
+	--background: #1e2127;
+	--list-border: #272a32;
+	--elevated-background: #2d3039;
+	--silent-text: #6c757d;
+	--normal-text: #9198aa;
+	--contrast: #ffffff;
+}
+html.light {
+	--background: #ffffff;
+	--list-border: #ced4da;
+	--elevated-background: #f7f7f7;
+	--silent-text: #999999;
+	--normal-text: #495057;
+	--contrast: #000000;
+}
+
+:root {
+	--accent: #1997c6;
+	--blue: #1997c6;
+	--green: #1bc98e;
+	--yellow: #e4d836;
+	--red: #e64759;
+	--contrast: #ffffff;
+	//--upvote: #cc3700;
+	//--downvote: #5a75cc;
+	--upvote: #1bc98e;
+	--downvote: #e64759;
+}
+
+body {
+	background-color: var(--background);
+	user-select: none;
+}
+.bg-dark {
+	background-color: var(--background) !important;
+}
+.list-group-item {
+	background-color: var(--elevated-background);
+	color: var(--normal-text);
+}
+.unlink {
+	color: var(--normal-text);
+}
+
+// icon colors
+.fas {
+	color: var(--normal-text);
+}
+.fab {
+	color: var(--normal-text);
+}
+.fas:active {
+	color: var(--silent-text);
+}
+.fas.icon-disabled {
+	color: var(--silent-text);
+}
+.fab.icon-disabled {
+	color: var(--silent-text);
+}
+.fas.icon-enabled {
+	color: var(--normal-text);
+}
+
+// information banner
+.information-banner {
+	position: fixed;
+	top: 0;
+	right: 0;
+	left: 0;
+	z-index: 10;
+
+	text-align: center;
+	display: none;
+}
+.information-banner > i {
+	color: var(--elevated-background);
+}
+#disconnected-banner {
+	background-color: var(--red);
+}
+#reconnected-banner {
+	background-color: var(--green);
+}
+#update-banner {
+	background-color: var(--yellow);
+}
+#update-banner-buttons > span {
+	display: inline-block;
+	width: 30%;
+	text-align: center;
+	text-decoration: underline;
+	cursor: pointer;
+}
+#demo-banner {
+	position: relative;
+	background-color: var(--yellow);
+	z-index: 5;
+}
+#demo-banner > a {
+	display: inline-block;
+	text-decoration: underline;
+	cursor: pointer;
+	color: var(--blue);
+}
+
+// toasts
+#toast-container {
+	position: fixed;
+	top: 0;
+	right: 0;
+	left: 0;
+	height: 90vh;
+    z-index: 10;
+	pointer-events: none;
+
+	display: flex;
+	justify-content: center;
+	align-items: flex-end;
+}
+.toast {
+	position: fixed;
+	margin: 10px;
+	background-color: transparent;
+	font-size: 1rem;
+	display: none;
+	opacity: 1;
+}
+.toast i {
+	margin-right: 0.75rem;
+	font-size: x-large;
+}
+.toast.error i {
+	color: var(--red);
+}
+.toast.warning i {
+	color: var(--yellow);
+}
+.toast.success i {
+	color: var(--green);
+}
+.toast.info i {
+	color: var(--blue);
+}
+.toast .toast-header {
+	color: var(--normal-text);
+	border-color: var(--list-border);
+	background-color: var(--elevated-background);
+}
+.toast .toast-body {
+	color: var(--normal-text);
+	background-color: var(--elevated-background);
+}
+
+// modals
+.modal .modal-content {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+
+	padding: 5px;
+	background-color: var(--elevated-background);
+	color: var(--normal-text);
+}
+
+// input feedback ripple effect
+.ripple {
+	width: 0;
+	height: 0;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.4);
+	transform: scale(0);
+	position: absolute;
+	opacity: 1;
+}
+.rippleEffect {
+	animation: rippleDrop .4s linear;
+}
+@keyframes rippleDrop {
+	100% {
+		transform: scale(2);
+		opacity: 0;
+	}
+}
+
+#content ul {
+	margin-bottom: 10px;
+}
+.list-header {
+	font-size: x-large;
+}
+.list-item {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+.list-item.centered {
+	justify-content: center;
+}
+.list-item.error {
+	color: var(--red);
+}
+.list-item > *{
+	width: 50%;
+	max-width: 200px;
+}
+.list-item > div {
+	text-align: center;
+}
+.list-item > button {
+	margin: 0px 10px;
+}
+
+.btn {
+	background-color: var(--accent);
+	color: var(--elevated-background);
+}
+
+.autoscrolling-container {
+	white-space: nowrap;
+	overflow: hidden;
+}
+.autoscrolling-container>span.autoscrolling {
+	display: inline-block;
+}
+
+@import "extra-icons";
+@import "base";
+@import "musiq";
+@import "lights";
+@import "settings";
+@import "network-info";

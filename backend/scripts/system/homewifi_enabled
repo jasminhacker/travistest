@@ -1,0 +1,6 @@
+#!/bin/bash
+if [ $(systemctl list-unit-files homewifi.service | wc -l) -gt 3 ]; then
+	! systemctl is-enabled --quiet homewifi 2>/dev/null
+else
+	exit 0
+fi

@@ -1,63 +1,33 @@
-name: Publish Raveberry visualization
+name: Publish Raveberry
 on:
   push:
     paths-ignore:
+      - 'docs/**'
       - '**.md'
 jobs:
-  test:
+  test-install:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
           python-version: '3.9'
-      # TODO
-      #build:
-      #  runs-on: ubuntu-latest
-      #  strategy:
-      #    matrix:
-      #      python: ["3.8", "3.9", "3.10"]
-      #  steps:
-      #    - uses: actions/checkout@v2
-      #    - uses: actions/setup-python@v2
-      #      with:
-      #        python-version: ${{ matrix.python }}
-      #    - uses: actions-rs/toolchain@v1
-      #      with:
-      #        toolchain: stable
-      #        profile: minimal
-      #        override: true
-      #    - run: pip install wheel setuptools_rust
-      #    - run: python setup.py sdist bdist_wheel
-      #    - run: ls -la dist/
-      #    - uses: actions/upload-artifact@v2
-      #      with:
-      #        name: dist
-      #        path: |
-      #          dist/static/*
-  crosscompile:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-      - name: Install cross
-        run: cargo install cross
-      - run: pip install setuptools-rust
-      - name: Build wheel using cross
-        shell: bash
-        env:
-          CARGO: cross
-          CARGO_BUILD_TARGET: aarch64-unknown-linux-gnu
-          PYO3_CROSS_LIB_DIR: /opt/python/cp38-cp38/lib
+      - name: Install pip dependencies
+        run: pip install -r backend/requirements/install.txt
+      - run: sudo apt-get update
+      - name: remove pyyaml
         run: |
-          docker build -t cross-pyo3:aarch64-unknown-linux-gnu .
-          python -m pip install wheel
-          python setup.py bdist_wheel --plat-name manylinux2014_aarch64
-          ls -la dist/
+          sudo rm -rf /usr/lib/python3/dist-packages/yaml
+          sudo rm -rf /usr/lib/python3/dist-packages/PyYAML-*
+      - run: sudo systemctl start postgresql
+      - run: bin/raveberry --confirm-config --use-default-password-i-promise-ill-change-it install
+      - name: Check if server is up
+        run: |
+          counter=0
+          until [[ $(curl -sS http://localhost/api/version/) == "Raveberry version"* ]] || [ $counter -gt 30 ]
+          do
+            counter=$((counter + 1))
+            sleep 1
+          done
+          # exit with failure if curl did not succeed in any iteration
+          [ $counter != 31 ]

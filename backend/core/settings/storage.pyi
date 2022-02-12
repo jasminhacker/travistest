@@ -1,0 +1,224 @@
+from typing import Literal, overload
+
+from cachetools import TTLCache
+
+# Sometimes the storage functions are accessed dynamically.
+# Comfort mypy by telling it the value will still be one of the specified ones.
+
+PlatformEnabled = Literal[
+    "local_enabled",
+    "youtube_enabled",
+    "spotify_enabled",
+    "soundcloud_enabled",
+    "jamendo_enabled",
+]
+
+PlatformSuggestions = Literal[
+    "youtube_suggestions",
+    "spotify_suggestions",
+    "soundcloud_suggestions",
+    "jamendo_suggestions",
+]
+
+DeviceBrightness = Literal[
+    "ring_brightness", "strip_brightness", "wled_brightness", "screen_brightness"
+]
+DeviceMonochrome = Literal[
+    "ring_monochrome", "strip_monochrome", "wled_monochrome", "screen_monochrome"
+]
+DeviceProgram = Literal[
+    "ring_program",
+    "last_ring_program",
+    "strip_program",
+    "last_strip_program",
+    "wled_program",
+    "last_wled_program",
+    "screen_program",
+    "last_screen_program",
+]
+
+cache: TTLCache = TTLCache(ttl=10, maxsize=128)
+@overload
+def get(
+    key: Literal[
+        "voting_enabled",
+        "ip_checking",
+        "logging_enabled",
+        "hashtags_active",
+        "embed_stream",
+        "dynamic_embedded_stream",
+        "online_suggestions",
+        "new_music_only",
+        "local_enabled",
+        "youtube_enabled",
+        "spotify_enabled",
+        "soundcloud_enabled",
+        "jamendo_enabled",
+        "feed_cava",
+        "paused",
+        "shuffle",
+        "repeat",
+        "autoplay",
+        "ring_monochrome",
+        "strip_monochrome",
+        "wled_monochrome",
+        "screen_monochrome",
+        "dynamic_resolution",
+    ]
+) -> bool: ...
+@overload
+def get(
+    key: Literal[
+        "downvotes_to_kick",
+        "number_of_suggestions",
+        "max_playlist_items",
+        "max_queue_length",
+        "people_to_party",
+        "youtube_suggestions",
+        "spotify_suggestions",
+        "jamendo_suggestions",
+        "soundcloud_suggestions",
+        "wled_led_count",
+        "wled_port",
+    ]
+) -> int: ...
+@overload
+def get(
+    key: Literal[
+        "song_cooldown",
+        "max_download_size",
+        "alarm_probability",
+        "buzzer_cooldown",
+        "buzzer_success_probability",
+        "volume",
+        "ups",
+        "program_speed",
+        "ring_brightness",
+        "strip_brightness",
+        "wled_brightness",
+        "screen_brightness",
+    ]
+) -> float: ...
+@overload
+def get(
+    key: Literal[
+        "connectivity_host",
+        "additional_keywords",
+        "forbidden_keywords",
+        "spotify_username",
+        "spotify_password",
+        "spotify_client_id",
+        "spotify_client_secret",
+        "soundcloud_auth_token",
+        "jamendo_client_id",
+        "output",
+        "backup_stream",
+        "wled_ip",
+        "ring_program",
+        "last_ring_program",
+        "strip_program",
+        "last_strip_program",
+        "wled_program",
+        "last_wled_program",
+        "screen_program",
+        "last_screen_program",
+    ]
+) -> str: ...
+@overload
+def get(key: Literal["initial_resolution"]) -> tuple[int, int]: ...
+@overload
+def get(key: Literal["fixed_color"]) -> tuple[float, float, float]: ...
+@overload
+def put(
+    key: Literal[
+        "voting_enabled",
+        "ip_checking",
+        "logging_enabled",
+        "hashtags_active",
+        "embed_stream",
+        "dynamic_embedded_stream",
+        "online_suggestions",
+        "new_music_only",
+        "local_enabled",
+        "youtube_enabled",
+        "spotify_enabled",
+        "soundcloud_enabled",
+        "jamendo_enabled",
+        "feed_cava",
+        "paused",
+        "shuffle",
+        "repeat",
+        "autoplay",
+        "ring_monochrome",
+        "strip_monochrome",
+        "wled_monochrome",
+        "screen_monochrome",
+        "dynamic_resolution",
+    ],
+    value: bool,
+) -> None: ...
+@overload
+def put(
+    key: Literal[
+        "downvotes_to_kick",
+        "number_of_suggestions",
+        "max_playlist_items",
+        "max_queue_length",
+        "people_to_party",
+        "youtube_suggestions",
+        "spotify_suggestions",
+        "jamendo_suggestions",
+        "soundcloud_suggestions",
+        "wled_led_count",
+        "wled_port",
+    ],
+    value: int,
+) -> None: ...
+@overload
+def put(
+    key: Literal[
+        "song_cooldown",
+        "max_download_size",
+        "alarm_probability",
+        "buzzer_cooldown",
+        "buzzer_success_probability",
+        "volume",
+        "ups",
+        "program_speed",
+        "ring_brightness",
+        "strip_brightness",
+        "wled_brightness",
+        "screen_brightness",
+    ],
+    value: float,
+) -> None: ...
+@overload
+def put(
+    key: Literal[
+        "connectivity_host",
+        "additional_keywords",
+        "forbidden_keywords",
+        "spotify_username",
+        "spotify_password",
+        "spotify_client_id",
+        "spotify_client_secret",
+        "soundcloud_auth_token",
+        "jamendo_client_id",
+        "output",
+        "backup_stream",
+        "wled_ip",
+        "ring_program",
+        "last_ring_program",
+        "strip_program",
+        "last_strip_program",
+        "wled_program",
+        "last_wled_program",
+        "screen_program",
+        "last_screen_program",
+    ],
+    value: str,
+) -> None: ...
+@overload
+def put(key: Literal["initial_resolution"], value: tuple[int, int]) -> None: ...
+@overload
+def put(key: Literal["fixed_color"], value: tuple[float, float, float]) -> None: ...

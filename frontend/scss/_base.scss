@@ -1,0 +1,187 @@
+// Navbar
+.navbar {
+	padding-bottom: 0px;
+}
+.navbar-brand {
+	margin: 0px;
+	padding: 0px;
+}
+.navbar-toggler {
+	background-color: var(--elevated-background);
+	border-color: var(--list-border);
+}
+#navbar-icon {
+	fill: var(--normal-text);
+}
+#navbar-icon.partymode {
+	animation: rainbow 2.1s linear infinite;
+}
+@keyframes rainbow {
+	/* Only specifying two keyframes does not result in a rainbow.
+	Probably rgb values are interpolated. */
+	from, to { fill: hsl(324, 13%, 62%); }
+	10%      { fill: hsl(360, 13%, 62%); }
+	20%      { fill: hsl( 36, 13%, 62%); }
+	30%      { fill: hsl( 72, 13%, 62%); }
+	40%      { fill: hsl(108, 13%, 62%); }
+	50%      { fill: hsl(144, 13%, 62%); }
+	60%      { fill: hsl(180, 13%, 62%); }
+	70%      { fill: hsl(216, 13%, 62%); }
+	80%      { fill: hsl(252, 13%, 62%); }
+	90%      { fill: hsl(288, 13%, 62%); }
+}
+
+.alarm {
+	animation: fade 2.5s linear 4;
+}
+
+@keyframes fade {
+	  0% {background-color: var(--background)}
+	/*
+	 18% {background-color: var(--red)}
+	 48% {background-color: var(--red)}
+	 */
+	 18% {background-color: red;}
+	 48% {background-color: red;}
+	 80% {background-color: var(--background)}
+	100% {background-color: var(--background)}
+}
+
+#hashtag-container {
+	width: 60%;
+	text-align: center;
+}
+#hashtag-container>i {
+	color: var(--normal-text);
+	display: inline-block;
+}
+#hashtag-text-container {
+	color: var(--normal-text);
+	vertical-align: middle;
+	display: inline-block;
+
+	transition: max-width 0.5s ease;
+	/* subtract space for the plus icon */
+	overflow: hidden;
+	white-space: nowrap;
+	max-width: 70%;
+}
+#hashtag-input {
+	visibility: hidden;
+	transition: max-width 0.5s ease;
+}
+#hashtag-input.shown, #hashtag-text-container.shown {
+	visibility: visible;
+	max-width: 70%;
+}
+#hashtag-input.hidden, #hashtag-text-container.hidden {
+	max-width: 0%;
+}
+
+// collapsible menu
+#menu {
+	margin: 16px;
+	margin-bottom: 0px;
+	font-size: xx-large;
+	color: var(--normal-text);
+}
+#menu i {
+	padding: 5px;
+}
+#menu svg {
+	padding: 5px;
+}
+.with-description {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+.with-description>span {
+	margin-top: -5px;
+	font-size: small;
+}
+.menu-row {
+	display: flex;
+	justify-content: space-between;
+}
+.menu-row>*{
+	min-width: 85px;
+	display: flex;
+	justify-content: center;
+}
+
+#lights-indicator.icon-enabled {
+	color: yellow;
+}
+
+#shareberry-icon {
+	fill: var(--normal-text);
+	margin-bottom: 3px;
+}
+
+#platform-controls {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-wrap: wrap;
+}
+
+#platform-controls > i.icon-enabled#youtube {
+	color: red /*youtube red*/;
+}
+#platform-controls > i.icon-enabled#spotify {
+	color: #1ED760 /*spotify green*/;
+}
+#platform-controls > i.icon-enabled#soundcloud {
+	color: #F95401 /*soundcloud orange*/;
+}
+#platform-controls > i.icon-enabled#jamendo {
+	color: #ff1f59;
+}
+
+#content {
+	padding: 8px;
+}
+
+#feedback-title {
+	font-size: x-large;
+}
+#feedback-modal .modal-content {
+	display: flex;
+	flex-direction: column;
+}
+#feedback-modal .modal-content > * {
+	margin: 15px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+#feedback-modal .modal-content > * > *{
+	margin: 5px;
+}
+#feedback-modal i {
+	font-size: xx-large;
+	margin-left: 5px;
+	margin-right: 5px;
+}
+#feedback-modal .fas.icon-enabled {
+	color: var(--yellow);
+}
+#feedback-links {
+	display: flex;
+	flex-direction: row;
+}
+#feedback-links i {
+	margin-left: 15px;
+	margin-right: 15px;
+}
+#feedback-links i#github {
+	color: var(--contrast);
+}
+#feedback-links i#discord {
+	color: #5865f2;
+}
+#feedback-links i#reddit {
+	color: #ff4500;
+}

@@ -1,0 +1,104 @@
+- name: Remove default nginx config
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+- name: Create nginx config
+  template:
+    src: files/raveberry.nginx
+    dest: /etc/nginx/sites-available/raveberry
+- name: Enable nginx config
+  file:
+    src: /etc/nginx/sites-available/raveberry
+    dest: /etc/nginx/sites-enabled/raveberry
+    state: link
+- name: Remove nginx configs from previous versions
+  file:
+    path: /etc/nginx/sites-enabled/raveberry-events
+    state: absent
+    follow: no
+- name: Reload nginx
+  systemd:
+    state: reloaded
+    name: nginx
+
+- name: Check if daphne override is inactive
+  stat:
+    path: /etc/systemd/system/daphne.service.d.override-inactive
+  register: daphne_override
+- name: daphne service
+  template:
+    src: files/daphne.service
+    dest: /etc/systemd/system/daphne.service
+- name: Create daphne override
+  when: not daphne_override.stat.exists
+  block:
+  - name: "Create daphne override: Create override directory for daphne service"
+    file:
+      path: /etc/systemd/system/daphne.service.d
+      state: directory
+  - name: "Create daphne override: daphne override config"
+    copy:
+      src: files/celery_enabled.conf
+      dest: /etc/systemd/system/daphne.service.d/celery_enabled.conf
+- name: celery service
+  template:
+    src: files/celery.service
+    dest: /etc/systemd/system/celery.service
+- name: upgrade service
+  template:
+    src: files/raveberry_upgrade.service
+    dest: /etc/systemd/system/raveberry_upgrade.service
+
+- name: Configure remote connection
+  when: config.remote_key and config.remote_ip and config.remote_port
+  block:
+    - name: "Configure remote connection: remote service"
+      copy:
+        src: files/remote.service
+        dest: /etc/systemd/system/remote.service
+    - name: "Configure remote connection: remote connect script"
+      template:
+        src: files/connect_to_remote
+        dest: /usr/local/sbin/raveberry/connect_to_remote
+        mode: +x
+    - name: "Configure remote connection: Create .ssh folder for root"
+      file:
+        path: /root/.ssh
+        state: directory
+        mode: 0700
+    - name: "Configure remote connection: Copy ssh key"
+      copy:
+        src: "{{ config.remote_key }}"
+        dest: "/root/.ssh/raveberry_remote"
+        mode: 0600
+    - name: "Configure remote connection: Create known hosts file"
+      file:
+        path: /root/.ssh/known_hosts
+        state: touch
+        mode: 0600
+    - name: "Configure remote connection: Check if key for remote host exists"
+      command: ssh-keygen -F "{{ config.remote_ip }}"
+      register: keygen
+      failed_when: no
+    - name: "Configure remote connection: Add host with custom SSH port"
+      when: keygen.rc != 0
+      block:
+        - name: Gather ssh keys
+          command: ssh-keyscan -H "{{ config.remote_ip }}"
+          register: keyscan
+        - name: Add keys to known hosts
+          blockinfile:
+            path: /root/.ssh/known_hosts
+            block: "{{ keyscan.stdout }}"
+
+- name: "Enable celery"
+  systemd:
+    daemon_reload: yes
+    enabled: yes
+    name: celery
+- name: "Start daphne"
+  systemd:
+    # daphne depends on celery, which is automatically restarted with daphne
+    enabled: yes
+    state: restarted
+    name: daphne

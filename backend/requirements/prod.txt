@@ -1,0 +1,3 @@
+-r common.txt
+psycopg2>=2.8
+hiredis>=2.0.0
