@@ -60,9 +60,12 @@
       pkg:
       # python package management
       - pulseaudio
+      # bluetooth playback
+      - pulseaudio-module-bluetooth
 
   - name: Bluetooth permissions for pulse
-    user:
-      name: pulse
-      groups: bluetooth
-      append: yes
+    shell: adduser pulse bluetooth
+      #user:
+      #  name: pulse
+      #  groups: bluetooth
+      #  append: yes

@@ -1,5 +1,0 @@
-- name: Bluetooth permissions for pulse
-  user:
-    name: pulse
-    groups: bluetooth
-    append: yes
