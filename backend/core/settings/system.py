@@ -10,22 +10,24 @@ import sys
 from typing import Dict, Optional, Tuple
 
 import cachetools.func
-import redis.exceptions
 import requests
 from django.conf import settings
 from django.core.handlers.wsgi import WSGIRequest
 from django.http import HttpResponse, HttpResponseBadRequest
 
-from core.musiq.playback import player_lock
+from core import redis
 from core.settings import storage
 from core.settings.settings import control
 
 
 def restart_mopidy() -> None:
     """Restarts the mopidy systemd service."""
+    from core.musiq.mopidy_player import mopidy_lock
+    import redis.exceptions
+
     subprocess.call(["sudo", "/usr/local/sbin/raveberry/restart_mopidy"])
     try:
-        player_lock.release()
+        mopidy_lock.release()
     except redis.exceptions.LockError:
         # the lock was already released
         pass
@@ -38,6 +40,10 @@ def update_mopidy_config(output: str) -> None:
         # raveberry cannot restart mopidy in the docker setup
         return
 
+    if not redis.get("mopidy_available"):
+        # mopidy can't be used if it is not available
+        return
+
     if output == "pulse":
         if storage.get("feed_cava") and shutil.which("cava"):
             output = "cava"
@@ -46,8 +52,8 @@ def update_mopidy_config(output: str) -> None:
 
     spotify_username = storage.get("spotify_username")
     spotify_password = storage.get("spotify_password")
-    spotify_client_id = storage.get("spotify_client_id")
-    spotify_client_secret = storage.get("spotify_client_secret")
+    spotify_client_id = storage.get("spotify_mopidy_client_id")
+    spotify_client_secret = storage.get("spotify_mopidy_client_secret")
     soundcloud_auth_token = storage.get("soundcloud_auth_token")
     jamendo_client_id = storage.get("jamendo_client_id")
 
@@ -298,6 +304,8 @@ def shutdown_system(_request: WSGIRequest) -> None:
 @cachetools.func.ttl_cache(ttl=60 * 60 * 24)
 def fetch_latest_version() -> Optional[str]:
     """Looks up the newest version number from PyPi and returns it."""
+    if not redis.get("has_internet"):
+        return None
     # https://github.com/pypa/pip/issues/9139
     # these subprocesses are expected to fail
     # move to pip index versions raveberry once that's not experimental anymore

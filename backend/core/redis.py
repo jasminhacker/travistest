@@ -8,7 +8,7 @@ from redis import Redis
 from core.util import strtobool
 
 # locks:
-# player_lock:  controlling mopidy api accesses
+# mopidy_lock:  controlling mopidy api accesses
 # lights_lock:  ensures lights settings are not changed during device updates
 
 # channels
@@ -20,12 +20,15 @@ DeviceInitialized = Literal
 # maps key to default and type of value
 defaults = {
     # playback
+    "active_player": "fake",
     "playing": False,
+    "paused": False,
     "playback_error": False,
     "stop_playback_loop": False,
     "alarm_playing": False,
     "alarm_requested": False,
     "alarm_duration": 10.0,
+    "last_buzzer": 0.0,
     "backup_playing": False,
     # lights
     "lights_active": False,
@@ -40,6 +43,7 @@ defaults = {
     "current_fps": 0.0,
     # settings
     "has_internet": False,
+    "mopidy_available": False,
     "youtube_available": False,
     "spotify_available": False,
     "soundcloud_available": False,

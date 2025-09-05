@@ -14,7 +14,7 @@ if [[ "$1" == "fakesink" ]]; then
 elif [[ "$1" == "regular" ]]; then
 	OUTPUT='rgvolume ! audioconvert ! audioresample ! pulsesink server=127.0.0.1'
 elif [[ "$1" == "cava" ]]; then
-	OUTPUT='rgvolume ! audioconvert ! audioresample ! tee name=t ! queue ! pulsesink server=127.0.0.1 device=cava t. ! queue max-size-bytes=85000000 max-size-buffers=0 max-size-time=0 ! pulsesink server=127.0.0.1 ts-offset=85000000'
+	OUTPUT='rgvolume ! audioconvert ! audioresample ! tee name=t ! queue ! pulsesink server=127.0.0.1 device=cava t. ! queue ! pulsesink server=127.0.0.1'
 elif [[ "$1" == "icecast" ]]; then
 	OUTPUT='rgvolume ! audioconvert ! audioresample ! lamemp3enc ! shout2send async=false mount=stream'
 elif [[ "$1" == "snapcast" ]]; then
@@ -32,4 +32,4 @@ sed -i -r -e "0,/^client_id/s/(^client_id\s*=).*/\1 $4/" /etc/mopidy/mopidy.conf
 sed -i -r -e "s/(^client_secret\s*=).*/\1 $5/" /etc/mopidy/mopidy.conf
 sed -i -r -e "s/(^auth_token\s*=).*/\1 $6/" /etc/mopidy/mopidy.conf
 # only replace last occurrence
-sed -i -r -e "$ s/(^client_id\s*=).*/\1 $7/" /etc/mopidy/mopidy.conf
+tac /etc/mopidy/mopidy.conf | sed -r -e "0,/^client_id/s/(^client_id\s*=).*/\1 $7/" | tac | tee >/dev/null /etc/mopidy/mopidy.conf

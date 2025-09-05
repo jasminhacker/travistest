@@ -5,6 +5,18 @@ from cachetools import TTLCache
 # Sometimes the storage functions are accessed dynamically.
 # Comfort mypy by telling it the value will still be one of the specified ones.
 
+class Interactivity:
+        full_control = "Full Public Control"
+        full_voting = "Up- and Downvoting"
+        upvotes_only = "Upvotes Only"
+        no_control = "No Control"
+
+class Privileges:
+        everybody = "Everybody"
+        mod = "Mod and Admin"
+        admin = "Admin Only"
+        nobody = "Nobody"
+
 PlatformEnabled = Literal[
     "local_enabled",
     "youtube_enabled",
@@ -38,17 +50,17 @@ DeviceProgram = Literal[
 ]
 
 cache: TTLCache = TTLCache(ttl=10, maxsize=128)
+
 @overload
 def get(
     key: Literal[
-        "voting_enabled",
         "ip_checking",
         "logging_enabled",
         "hashtags_active",
-        "embed_stream",
-        "dynamic_embedded_stream",
+        "privileged_stream",
         "online_suggestions",
         "new_music_only",
+        "enqueue_first",
         "local_enabled",
         "youtube_enabled",
         "spotify_enabled",
@@ -69,6 +81,7 @@ def get(
 @overload
 def get(
     key: Literal[
+        "next_color_index",
         "downvotes_to_kick",
         "number_of_suggestions",
         "max_playlist_items",
@@ -85,6 +98,7 @@ def get(
 @overload
 def get(
     key: Literal[
+        "color_offset",
         "song_cooldown",
         "max_download_size",
         "alarm_probability",
@@ -102,13 +116,20 @@ def get(
 @overload
 def get(
     key: Literal[
+        "interactivity",
+        "color_indication",
         "connectivity_host",
         "additional_keywords",
         "forbidden_keywords",
         "spotify_username",
         "spotify_password",
-        "spotify_client_id",
-        "spotify_client_secret",
+        "spotify_device_client_id",
+        "spotify_device_client_secret",
+        "spotify_mopidy_client_id",
+        "spotify_mopidy_client_secret",
+        "spotify_redirect_uri",
+        "spotify_authorized_url",
+        "spotipy_token_info",
         "soundcloud_auth_token",
         "jamendo_client_id",
         "output",
@@ -131,14 +152,13 @@ def get(key: Literal["fixed_color"]) -> tuple[float, float, float]: ...
 @overload
 def put(
     key: Literal[
-        "voting_enabled",
         "ip_checking",
         "logging_enabled",
         "hashtags_active",
-        "embed_stream",
-        "dynamic_embedded_stream",
+        "privileged_stream",
         "online_suggestions",
         "new_music_only",
+        "enqueue_first",
         "local_enabled",
         "youtube_enabled",
         "spotify_enabled",
@@ -160,6 +180,7 @@ def put(
 @overload
 def put(
     key: Literal[
+        "next_color_index",
         "downvotes_to_kick",
         "number_of_suggestions",
         "max_playlist_items",
@@ -177,6 +198,7 @@ def put(
 @overload
 def put(
     key: Literal[
+        "color_offset",
         "song_cooldown",
         "max_download_size",
         "alarm_probability",
@@ -195,13 +217,20 @@ def put(
 @overload
 def put(
     key: Literal[
+        "interactivity",
+        "color_indication",
         "connectivity_host",
         "additional_keywords",
         "forbidden_keywords",
         "spotify_username",
         "spotify_password",
-        "spotify_client_id",
-        "spotify_client_secret",
+        "spotify_device_client_id",
+        "spotify_device_client_secret",
+        "spotify_mopidy_client_id",
+        "spotify_mopidy_client_secret",
+        "spotify_redirect_uri",
+        "spotify_authorized_url",
+        "spotipy_token_info",
         "soundcloud_auth_token",
         "jamendo_client_id",
         "output",

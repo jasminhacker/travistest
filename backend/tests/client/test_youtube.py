@@ -1,9 +1,11 @@
 import os
+import sys
 from typing import Callable, Optional
 
 import yt_dlp
 from django.conf import settings
 from django.urls import reverse
+from unittest import skip, skipIf
 
 from core.musiq.youtube import Youtube
 from core.settings import storage
@@ -23,14 +25,13 @@ class YoutubeDLLogger:
         pass
 
     def error(self, msg: str) -> None:
-        print(msg)
+        self.test.tearDown()
         self.test.skipTest(msg)
 
 
 class YoutubeTests(MusicTest):
     def setUp(self) -> None:
         super().setUp()
-
         try:
             # try to find out whether youtube is happy with us this time
             # send a request and skip the test if there is an error
@@ -38,9 +39,10 @@ class YoutubeTests(MusicTest):
             ydl_opts["logger"] = YoutubeDLLogger(self)
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 self.info_dict = ydl.download(
-                    ["https://www.youtube.com/watch?v=wobbf3lb2nk"]
+                    ["https://www.youtube.com/watch?v=ZvD8QSO7NPw"]
                 )
         except (yt_dlp.utils.ExtractorError, yt_dlp.utils.DownloadError) as error:
+            super().tearDown()
             self.skipTest(
                 f"Error when interacting with youtube, skipping test: {error}"
             )
@@ -99,29 +101,29 @@ class YoutubeTests(MusicTest):
             self.skipTest("This IP sent too many requests to Youtube.")
 
     def test_query(self) -> None:
-        self._post_request("request-music", "Eskimo Callboy MC Thunder Official Video")
+        self._post_request("request-music", "Myuu Disintegrating")
         current_song = self._poll_current_song()
         self.assertEqual(
-            current_song["externalUrl"], "https://www.youtube.com/watch?v=wobbf3lb2nk"
+            current_song["externalUrl"], "https://www.youtube.com/watch?v=piFJVwr1YYA"
         )
-        self.assertIn("MC Thunder", current_song["title"])
-        self.assertAlmostEqual(current_song["duration"], 268, delta=1)
+        self.assertIn("Disintegrating", current_song["title"])
+        self.assertAlmostEqual(current_song["duration"], 284, delta=1)
 
     def test_url(self):
         self._post_request(
-            "request-music", "https://www.youtube.com/watch?v=wobbf3lb2nk"
+            "request-music", "https://www.youtube.com/watch?v=ZvD8QSO7NPw"
         )
         current_song = self._poll_current_song()
         self.assertEqual(
-            current_song["externalUrl"], "https://www.youtube.com/watch?v=wobbf3lb2nk"
+            current_song["externalUrl"], "https://www.youtube.com/watch?v=ZvD8QSO7NPw"
         )
-        self.assertIn("MC Thunder", current_song["title"])
-        self.assertAlmostEqual(current_song["duration"], 268, delta=1)
+        self.assertIn("Collapse", current_song["title"])
+        self.assertAlmostEqual(current_song["duration"], 200, delta=1)
 
     def test_playlist_url(self):
         self._post_request(
             "request-music",
-            "https://www.youtube.com/playlist?list=PLvYcr2tNZuRquz0NQmBFF6ZhqFHSeOrbk",
+            "https://www.youtube.com/playlist?list=PLt4ZkJ3lYmFXG33Jk4BWaV4y0vypFCGtm",
             playlist=True,
         )
         state = self._poll_musiq_state(
@@ -131,9 +133,9 @@ class YoutubeTests(MusicTest):
             timeout=60,
         )
         expected_playlist = [
-            "https://www.youtube.com/watch?v=d0KWiDGi_ek",
-            "https://www.youtube.com/watch?v=jcfcZfgyzm8",
-            "https://www.youtube.com/watch?v=47P6CI7V8gM",
+            "https://www.youtube.com/watch?v=ZvD8QSO7NPw",
+            "https://www.youtube.com/watch?v=piFJVwr1YYA",
+            "https://www.youtube.com/watch?v=Dz-tOLvN4C0",
         ]
         # The first song that is downloaded will be played.
         # This is not necessarily the first one in the playlist.
@@ -146,37 +148,47 @@ class YoutubeTests(MusicTest):
         # make sure the remaining songs are in expected order
         self.assertEqual(actual_playlist, expected_playlist)
 
-    # same query gives different results
-    # def test_playlist_query(self):
-    #     self._post_request(
-    #         "request-music", "Muse Resistance Full Album HD", playlist=True
-    #     )
-    #     state = self._poll_musiq_state(
-    #         lambda state: state["musiq"]["currentSong"]
-    #         and len(state["musiq"]["songQueue"]) == 2
-    #         and all(song["internalUrl"] for song in state["musiq"]["songQueue"]),
-    #         timeout=60,
-    #     )
-    #     expected_playlist = [
-    #         "https://www.youtube.com/watch?v=d0KWiDGi_ek",
-    #         "https://www.youtube.com/watch?v=jcfcZfgyzm8",
-    #         "https://www.youtube.com/watch?v=47P6CI7V8gM",
-    #     ]
-    #     self.assertIn(state["musiq"]["currentSong"]["externalUrl"], expected_playlist)
-    #     expected_playlist.remove(state["musiq"]["currentSong"]["externalUrl"])
-    #     actual_playlist = [
-    #         state["musiq"]["songQueue"][0]["externalUrl"],
-    #         state["musiq"]["songQueue"][1]["externalUrl"],
-    #     ]
-    #     self.assertEqual(actual_playlist, expected_playlist)
+    @skip("Albums not yet supported")
+    def test_playlist_query(self):
+        self._post_request(
+            "request-music",
+            '"Myuu" "Sad Piano Music"',
+            playlist=True,
+        )
+        state = self._poll_musiq_state(
+            lambda state: state["musiq"]["currentSong"]
+            and len(state["musiq"]["songQueue"]) == 2
+            and all(song["internalUrl"] for song in state["musiq"]["songQueue"]),
+            timeout=60,
+        )
+        expected_playlist = [
+            "https://www.youtube.com/watch?v=ZvD8QSO7NPw",
+            "https://www.youtube.com/watch?v=piFJVwr1YYA",
+            "https://www.youtube.com/watch?v=Dz-tOLvN4C0",
+        ]
+        # The first song that is downloaded will be played.
+        # This is not necessarily the first one in the playlist.
+        self.assertIn(state["musiq"]["currentSong"]["externalUrl"], expected_playlist)
+        expected_playlist.remove(state["musiq"]["currentSong"]["externalUrl"])
+        actual_playlist = [
+            state["musiq"]["songQueue"][0]["externalUrl"],
+            state["musiq"]["songQueue"][1]["externalUrl"],
+        ]
+        # make sure the remaining songs are in expected order
+        self.assertEqual(actual_playlist, expected_playlist)
 
+    @skipIf(
+        not sys.argv[-1].endswith("test_autoplay"),
+        "This test can only be run individually.",
+    )
     def test_autoplay(self) -> None:
         self._post_request(
-            "request-music", "https://www.youtube.com/watch?v=wobbf3lb2nk"
+            "request-music", "https://www.youtube.com/watch?v=ZvD8QSO7NPw"
         )
         self._poll_current_song()
         self.client.post(reverse("set-autoplay"), {"value": "true"})
         # make sure a song was downloaded into the queue
+        # sometimes this fails due to long songs taking too long to download
         state = self._poll_musiq_state(
             lambda state: len(state["musiq"]["songQueue"]) == 1
             and state["musiq"]["songQueue"][0]["internalUrl"],
@@ -190,7 +202,7 @@ class YoutubeTests(MusicTest):
 
     def test_radio(self) -> None:
         self._post_request(
-            "request-music", "https://www.youtube.com/watch?v=w8KQmps-Sog"
+            "request-music", "https://www.youtube.com/watch?v=ZvD8QSO7NPw"
         )
         self._poll_current_song()
         self._post_request("request-radio")

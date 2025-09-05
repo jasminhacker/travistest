@@ -20,6 +20,23 @@ from core.util import extract_value, strtobool
 def start() -> None:
     """Initializes this module by checking which platforms are available to use."""
 
+    # mopidy is available if the server can be connected to
+    import socket
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    location = (conf.MOPIDY_HOST, int(conf.MOPIDY_PORT))
+    mopidy_available = True
+    try:
+        check = sock.connect_ex(location)
+        if check != 0:
+            mopidy_available = False
+    except (ConnectionRefusedError, socket.gaierror):
+        # check for gaierror because docker compose setups might not be able to resolve the hostname
+        mopidy_available = False
+    finally:
+        sock.close()
+    redis.put("mopidy_available", mopidy_available)
+
     # local songs are enabled if a library is set
     local_enabled = os.path.islink(library.get_library_path())
     storage.put("local_enabled", local_enabled)
@@ -31,18 +48,7 @@ def start() -> None:
         # if youtube is not available, overwrite the database to disable it
         storage.put("youtube_enabled", False)
 
-    # Spotify has no python dependencies we could easily check.
-    try:
-        spotify_available = (
-            conf.DOCKER
-            or "[spotify]"
-            in subprocess.check_output(["mopidy", "config"], stderr=subprocess.DEVNULL)
-            .decode()
-            .splitlines()
-        )
-    except FileNotFoundError:
-        # mopidy is not installed (eg in docker). Since we can't check, enable
-        spotify_available = True
+    spotify_available = conf.DOCKER or importlib.util.find_spec("spotipy") is not None
     redis.put("spotify_available", spotify_available)
     if not spotify_available:
         storage.put("spotify_enabled", False)
@@ -110,7 +116,31 @@ def set_spotify_enabled(request: WSGIRequest) -> HttpResponse:
     """Enables or disables spotify to be used as a song provider.
     Makes sure mopidy has correct spotify configuration."""
     value, _ = extract_value(request.POST)
-    return _set_extension_enabled("spotify", strtobool(value))
+    mopidy_response = _set_extension_enabled("spotify", strtobool(value))
+
+    if not strtobool(value):
+        return mopidy_response
+    else:
+        # Check whether Spotify device authorization works
+        from core.musiq.spotify import Spotify
+        from spotipy.oauth2 import SpotifyOauthError
+
+        try:
+            api = Spotify.device_api()
+            api.devices()
+        except SpotifyOauthError as e:
+            local_message = e.error_description or e
+            local_successful = False
+        else:
+            local_message = "Login successful"
+            local_successful = True
+        message = f"device: {local_message}; local: {mopidy_response.content.decode()}"
+        if type(mopidy_response) is HttpResponseBadRequest and not local_successful:
+            return HttpResponseBadRequest(message)
+        else:
+            # enable spotify if at least one option works
+            storage.put(cast(PlatformEnabled, f"spotify_enabled"), True)
+            return HttpResponse(message)
 
 
 @control
@@ -122,8 +152,8 @@ def set_spotify_suggestions(request: WSGIRequest) -> HttpResponse:
 
 
 @control
-def set_spotify_credentials(request: WSGIRequest) -> HttpResponse:
-    """Update spotify credentials."""
+def set_spotify_mopidy_credentials(request: WSGIRequest) -> HttpResponse:
+    """Update spotify mopidy credentials."""
     username = request.POST.get("username")
     password = request.POST.get("password")
     client_id = request.POST.get("client_id")
@@ -134,10 +164,36 @@ def set_spotify_credentials(request: WSGIRequest) -> HttpResponse:
 
     storage.put("spotify_username", username)
     storage.put("spotify_password", password)
-    storage.put("spotify_client_id", client_id)
-    storage.put("spotify_client_secret", client_secret)
+    storage.put("spotify_mopidy_client_id", client_id)
+    storage.put("spotify_mopidy_client_secret", client_secret)
 
     system.update_mopidy_config("pulse")
+    from core.musiq.spotify import Spotify
+
+    Spotify.create_mopidy_api()
+    return HttpResponse("Updated credentials")
+
+
+@control
+def set_spotify_device_credentials(request: WSGIRequest) -> HttpResponse:
+    """Update spotify device credentials."""
+    client_id = request.POST.get("client_id")
+    client_secret = request.POST.get("client_secret")
+    redirect_uri = request.POST.get("redirect_uri")
+    authorized_url = request.POST.get("authorized_url")
+
+    if not client_id or not client_secret or not redirect_uri or not authorized_url:
+        return HttpResponseBadRequest("All fields are required")
+
+    storage.put("spotify_device_client_id", client_id)
+    storage.put("spotify_device_client_secret", client_secret)
+    storage.put("spotify_redirect_uri", redirect_uri)
+    storage.put("spotify_authorized_url", authorized_url)
+
+    system.update_mopidy_config("fakesink")
+    from core.musiq.spotify import Spotify
+
+    Spotify.create_device_api()
     return HttpResponse("Updated credentials")
 
 

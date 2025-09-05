@@ -54,7 +54,10 @@ def _add_system_install_state(settings_state: Dict[str, Any]) -> None:
             subprocess.call(["/usr/local/sbin/raveberry/homewifi_enabled"]) != 0
         )
         settings_state["hotspotEnabled"] = (
-            subprocess.call(["/usr/local/sbin/raveberry/hotspot_enabled"]) != 0
+            subprocess.call(
+                ["/usr/local/sbin/raveberry/hotspot_enabled"], stderr=subprocess.DEVNULL
+            )
+            != 0
         )
         settings_state["wifiProtectionEnabled"] = (
             subprocess.call(["/usr/local/sbin/raveberry/wifi_protection_enabled"]) != 0
@@ -84,18 +87,19 @@ def state_dict() -> Dict[str, Any]:
     state = base.state_dict()
 
     settings_state: Dict[str, Any] = {}
-    settings_state["votingEnabled"] = get("voting_enabled")
+    settings_state["interactivity"] = get("interactivity")
+    settings_state["colorIndication"] = get("color_indication")
     settings_state["ipChecking"] = get("ip_checking")
     settings_state["downvotesToKick"] = get("downvotes_to_kick")
     settings_state["loggingEnabled"] = get("logging_enabled")
     settings_state["hashtagsActive"] = get("hashtags_active")
-    settings_state["embedStream"] = get("embed_stream")
-    settings_state["dynamicEmbeddedStream"] = get("dynamic_embedded_stream")
+    settings_state["privilegedStream"] = get("privileged_stream")
     settings_state["onlineSuggestions"] = get("online_suggestions")
     settings_state["numberOfSuggestions"] = get("number_of_suggestions")
     settings_state["connectivityHost"] = get("connectivity_host")
     settings_state["hasInternet"] = redis.get("has_internet")
     settings_state["newMusicOnly"] = get("new_music_only")
+    settings_state["enqueueFirst"] = get("enqueue_first")
     settings_state["songCooldown"] = get("song_cooldown")
     settings_state["maxDownloadSize"] = get("max_download_size")
     settings_state["maxPlaylistItems"] = get("max_playlist_items")
@@ -156,6 +160,10 @@ def index(request: WSGIRequest) -> HttpResponse:
     else:
         context["local_library"] = "/"
     context["version"] = conf.VERSION
+    context[
+        "spotify_scope"
+    ] = "user-read-playback-state user-modify-playback-state user-library-read playlist-read-private playlist-read-collaborative"
+    context["spotify_oauth_authorize_url"] = "https://accounts.spotify.com/authorize"
     return render(request, "settings.html", context)
 
 

@@ -1,9 +1,80 @@
 # Changelog
 
+## 0.11.5 - 2025-12-10
+
+- Disable pipewire services during installation
+- Use newer ansible version that is compatible with python 3.12
+- Added aarch64 to possible architectures for volume normalization package
+
+## 0.11.4 - 2024-12-10
+
+- Adapt mopidy-spotify installation according to https://github.com/mopidy/mopidy-spotify
+- Volume normalization: install arm64 package for aarch64 architecture during install
+
+## 0.11.3 - 2024-08-01
+
+- Update mopidy repository to debian bullseye
+- Allow pip to install system packages
+- Hide color indicator when voting indicators are disabled
+
+## 0.11.2 - 2024-03-21
+
+- Voting behavior is indicated
+- Users are represented by different colors
+- Users can override their assigned color
+- Needs to be enabled in settings
+
+- Requested songs from random suggestion for unavailable platforms are no longer discarded
+- Instead they are searched for in available platforms
+- Fake player no longer relies on mopidy
+
+## 0.11.1 - 2023-12-15
+
+- nginx port can be customized
+- "Max Playlist Length" setting honored for Spotify playlists
+
+## 0.11.0 - 2023-12-09
+
+- New Spotify feature: device playback
+- Any logged in Spotify app can be used as playback device
+- Local playback is still possible, can switch between the two
+- Credentials are checked for both local and device mode
+- Added documentation on how to provide credentials
+- Abstraction for two different players: mopidy and spotify
+
+- Youtube Music is used for searches
+- music.youtube.com links are parsed correctly
+- Client streaming for Youtube did not work reliably, was removed
+- Sound outputs have more descriptive names and are grouped
+- Docker setup also logs low severity messages
+- Too frequent alarms are prevented
+- Storing dark/light theme preferences does not clash with django's
+
+
+## 0.10.7 - 2022-10-30
+
+- Check whether Jamendo songs are streamable before enqueuing them
+
+## 0.10.6 - 2022-06-23
+
+- Docker setup works with arbitrary container names
+- Simplified client streaming settings
+- Client streaming configurable from docker setup
+- Playlists are not suggested if the platform is not available
+- Fixed apt dependencies during install
+- Don't crash the install when admin files are already present
+
+## 0.10.5 - 2022-04-22
+
+- Different Levels of interactivity can be set in the settings: Full Control, Full Voting, Upvotes only, No Control
+- Added option to enqueue songs at the top of the queue rather than the bottom
+- Fixed a bug where the main page could not be loaded when no song provider was enabled
+- Dynamic streaming possible with Youtube songs
+
 ## 0.10.4 - 2022-02-12
 
 - Added song cooldown option that prevents a song from being enqueued again for a given time
-- Added buzzer success probability option. Custom sounds can be provided in resources/yes and resources/no.
+- Added buzzer success probability option. Custom sounds can be provided in `resources/sounds/yes` and `resources/sounds/no`.
 - Dropdown icons have descriptions
 - Removed link to /stream from dropdown
 - Added button to send feedback

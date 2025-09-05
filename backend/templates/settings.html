@@ -8,6 +8,8 @@
 		'{{ path.name }}': '/ajax/settings/{{ path.pattern }}',
 	{% endfor %}
 	};
+	const SPOTIFY_SCOPE = '{{ spotify_scope }}';
+	const SPOTIFY_OAUTH_AUTHORIZE_URL = '{{ spotify_oauth_authorize_url }}';
 {% endblock %}
 
 {% block content %}
@@ -18,8 +20,20 @@
 			<span>Basic Settings</span>
 		</li>
 		<li class="list-group-item list-item">
-			<span class="description">Voting</span>
-			<input type="checkbox" id="voting-enabled">
+			<span class="description">Interactivity (how much normal users can influence the queue)</span>
+			<select class="form-control" id="interactivity">
+				{% for name,description in interactivities.items %}
+				<option data-name="{{name}}">{{ description }}</option>
+				{% endfor %}
+			</select>
+		</li>
+		<li class="list-group-item list-item">
+			<span class="description">Voting behavior is visible to</span>
+			<select class="form-control" id="color-indication">
+				{% for name,description in privileges.items %}
+					<option data-name="{{name}}">{{ description }}</option>
+				{% endfor %}
+			</select>
 		</li>
 		<li class="list-group-item list-item">
 			<span class="description">IP vote checking</span>
@@ -38,12 +52,8 @@
 			<input type="checkbox" id="hashtags-active">
 		</li>
 		<li class="list-group-item list-item">
-			<span class="description">Embed stream</span>
-			<input type="checkbox" id="embed-stream">
-		</li>
-		<li class="list-group-item list-item">
-			<span class="description">Clients stream songs directly instead of using /stream (currently only Jamendo)</span>
-			<input type="checkbox" id="dynamic-embedded-stream">
+			<span class="description">Only privileged users can stream audio</span>
+			<input type="checkbox" id="privileged-stream">
 		</li>
 		<li class="list-group-item list-item">
 			<span class="description">Online Suggestions</span>
@@ -82,7 +92,11 @@
 			<input type="checkbox" id="new-music-only">
 		</li>
 		<li class="list-group-item list-item">
-			<span class="description">Minimum time that needs to pass before a song can be queued again (requires logging; in hours, 0 to disable)</span>
+			<span class="description">Add new songs to the top of the queue instead of to the bottom</span>
+			<input type="checkbox" id="enqueue-first">
+		</li>
+		<li class="list-group-item list-item">
+			<span class="description">Song cooldown (Minimum time before a song can be queued again. Requires logging. In hours, 0 to disable)</span>
 			<input id="song-cooldown"/>
 		</li>
 		<li class="list-group-item list-item">
@@ -165,28 +179,56 @@
 			<input id="spotify-suggestions"/>
 		</li>
 		<li class="list-group-item list-item">
+			Info on how to get credentials
+			<a href="https://github.com/raveberry/raveberry/blob/master/docs/spotify.md" target="_blank" rel="noopener">Readme</a>
+		</li>
+		<li class="list-group-item list-item">
+			<b>Credentials for device playback</b>
+		</li>
+		<li class="list-group-item list-item">
+			<span class="description">Client ID</span>
+			<input id="spotify-device-client-id"/>
+		</li>
+		<li class="list-group-item list-item">
+			<span class="description">Client Secret</span>
+			<input id="spotify-device-client-secret"/>
+		</li>
+		<li class="list-group-item list-item">
+			<span class="description">Redirect Uri</span>
+			<input id="spotify-redirect-uri"/>
+		</li>
+		<li class="list-group-item list-item">
+			<span class="description">Open this:</span>
+			<div id="spotify-authorize-url"></div>
+		</li>
+		<li class="list-group-item list-item">
+			<span class="description">Auth Url</span>
+			<input id="spotify-authorized-url"/>
+		</li>
+		<li class="list-group-item list-item centered">
+			<button class="btn" id="set-spotify-device-credentials">Set Credentials</button>
+		</li>
+		<li class="list-group-item list-item">
+			<b>Credentials for local playback</b>
+		</li>
+		<li class="list-group-item list-item">
 			<span class="description">Username</span>
 			<input id="spotify-username"/>
 		</li>
 		<li class="list-group-item list-item">
 			<span class="description">Password</span>
-			<input type="password" id="spotify-password"/>
+			<input id="spotify-password"/>
 		</li>
 		<li class="list-group-item list-item">
-			<span class="description">
-				Client ID
-				<a href="https://mopidy.com/ext/spotify/#authentication" data-toggle="tooltip" target="_blank" rel="noopener" title="Click here to get the credentials">
-					<i class="fas fa-question-circle"></i>
-				</a>
-			</span>
-			<input id="spotify-client-id"/>
+			<span class="description">Client ID</span>
+			<input id="spotify-mopidy-client-id"/>
 		</li>
 		<li class="list-group-item list-item">
 			<span class="description">Client Secret</span>
-			<input type="password" id="spotify-client-secret"/>
+			<input id="spotify-mopidy-client-secret"/>
 		</li>
 		<li class="list-group-item list-item centered">
-			<button class="btn" id="set-spotify-credentials">Set Credentials</button>
+			<button class="btn" id="set-spotify-mopidy-credentials">Set Credentials</button>
 		</li>
 	</ul>
 
@@ -279,24 +321,28 @@
 		</li>
 	</ul>
 
-	<ul class="list-group install-only">
+	<ul class="list-group">
 		<li class="list-group-item list-header">
 			<i class="fas fa-angle-down settings-collapser collapsed"></i>
 			<span>Sound Output</span>
 		</li>
-		<li class="list-group-item list-item">
+		<li class="list-group-item list-item install-only">
 			<span class="description">Duplicate audio into visualization if available</span>
 			<input type="checkbox" id="feed-cava">
 		</li>
 		<li class="list-group-item list-item">
 			<span class="description">Output</span>
-			<input id="output"/>
+			<select class="form-control" id="output">
+			</select>
+		</li>
+		<li class="list-group-item list-item">
+			Make sure to disable all other platforms when choosing a Spotify device for playback.
 		</li>
 		<li class="list-group-item list-item">
 			<span class="description">Player status (restarting player/server might fix errors)</span>
 			<span id="player-status"></span>
 		</li>
-		<li class="list-group-item list-item centered">
+		<li class="list-group-item list-item centered install-only">
 			<button class="btn" id="restart-player">Restart Player</button>
 		</li>
 	</ul>

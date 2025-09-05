@@ -25,10 +25,10 @@ class SpotifyTests(MusicTest):
             key="spotify_password", defaults={"value": password}
         )
         Setting.objects.update_or_create(
-            key="spotify_client_id", defaults={"value": client_id}
+            key="spotify_mopidy_client_id", defaults={"value": client_id}
         )
         Setting.objects.update_or_create(
-            key="spotify_client_secret", defaults={"value": client_secret}
+            key="spotify_mopidy_client_secret", defaults={"value": client_secret}
         )
 
         self.client.post(reverse("set-spotify-enabled"), {"value": "true"})
@@ -37,7 +37,7 @@ class SpotifyTests(MusicTest):
         self.client.post(
             reverse("request-music"),
             {
-                "query": "Eskimo Callboy MC Thunder",
+                "query": "Myuu Collapse",
                 "playlist": "false",
                 "platform": "spotify",
             },
@@ -45,17 +45,17 @@ class SpotifyTests(MusicTest):
         current_song = self._poll_current_song()
         self.assertEqual(
             current_song["externalUrl"],
-            "https://open.spotify.com/track/7synI8hwKZiEsf11m1tqto",
+            "https://open.spotify.com/track/0o261w05EPiGfxNtVlWn6m",
         )
-        self.assertEqual(current_song["artist"], "Eskimo Callboy")
-        self.assertEqual(current_song["title"], "MC Thunder")
-        self.assertAlmostEqual(current_song["duration"], 230, delta=1)
+        self.assertEqual(current_song["artist"], "Myuu")
+        self.assertEqual(current_song["title"], "Collapse")
+        self.assertAlmostEqual(current_song["duration"], 200, delta=1)
 
     def test_url(self) -> None:
         self.client.post(
             reverse("request-music"),
             {
-                "query": "https://open.spotify.com/track/4EyPadLFhtWojU7mkT5hqT",
+                "query": "https://open.spotify.com/track/0o261w05EPiGfxNtVlWn6m",
                 "playlist": "false",
                 "platform": "spotify",
             },
@@ -63,17 +63,17 @@ class SpotifyTests(MusicTest):
         current_song = self._poll_current_song()
         self.assertEqual(
             current_song["externalUrl"],
-            "https://open.spotify.com/track/4EyPadLFhtWojU7mkT5hqT",
+            "https://open.spotify.com/track/0o261w05EPiGfxNtVlWn6m",
         )
-        self.assertEqual(current_song["artist"], "Bring Me The Horizon")
-        self.assertEqual(current_song["title"], "Avalanche")
-        self.assertAlmostEqual(current_song["duration"], 262, delta=1)
+        self.assertEqual(current_song["artist"], "Myuu")
+        self.assertEqual(current_song["title"], "Collapse")
+        self.assertAlmostEqual(current_song["duration"], 200, delta=1)
 
     def test_playlist_url(self) -> None:
         self.client.post(
             reverse("request-music"),
             {
-                "query": "https://open.spotify.com/playlist/2Ja8Y9o9awbq6F9Sl1AcwI",
+                "query": "https://open.spotify.com/album/1d3X0w0kdfqcvOVNfnthhP",
                 "playlist": "true",
                 "platform": "spotify",
             },
@@ -86,30 +86,30 @@ class SpotifyTests(MusicTest):
         )
         self.assertEqual(
             state["musiq"]["currentSong"]["externalUrl"],
-            "https://open.spotify.com/track/5wq8wceQvaFlOZovDtfr0j",
+            "https://open.spotify.com/track/3uYgQ819EExqKhxr2ILFok",
         )
         self.assertEqual(
             state["musiq"]["songQueue"][0]["externalUrl"],
-            "https://open.spotify.com/track/5rupf5kRDLhhFPxH15ZmBF",
+            "https://open.spotify.com/track/43TuwMfK9h8b0rtbkdWCYJ",
         )
         self.assertEqual(
             state["musiq"]["songQueue"][1]["externalUrl"],
-            "https://open.spotify.com/track/3IwAWUa9JeTbwumBPvnOj9",
+            "https://open.spotify.com/track/7JsBddAbtHCjdEtMobVfyL",
         )
         self.assertEqual(
             state["musiq"]["songQueue"][2]["externalUrl"],
-            "https://open.spotify.com/track/3vMrcGW4o35zY6vXjWb1p7",
+            "https://open.spotify.com/track/01Rk5ZPcMeQLxBEAcxZMju",
         )
         self.assertEqual(
             state["musiq"]["songQueue"][3]["externalUrl"],
-            "https://open.spotify.com/track/6Jf7Sx68vsWFKeWjOxcLhQ",
+            "https://open.spotify.com/track/7y6D7PitToNpVycQ2WuUPi",
         )
 
     def test_playlist_query(self):
         self.client.post(
             reverse("request-music"),
             {
-                "query": "Muse Resistance Album",
+                "query": "Myuu The Dark Piano, Vol. 3 Album",
                 "playlist": "true",
                 "platform": "spotify",
             },
@@ -122,30 +122,30 @@ class SpotifyTests(MusicTest):
         )
         self.assertEqual(
             state["musiq"]["currentSong"]["externalUrl"],
-            "https://open.spotify.com/track/5wq8wceQvaFlOZovDtfr0j",
+            "https://open.spotify.com/track/4TCltHCj9FTS36rK7XZXMx",
         )
         self.assertEqual(
             state["musiq"]["songQueue"][0]["externalUrl"],
-            "https://open.spotify.com/track/5rupf5kRDLhhFPxH15ZmBF",
+            "https://open.spotify.com/track/1eo3KheI9C0uvp4PlmTdrc",
         )
         self.assertEqual(
             state["musiq"]["songQueue"][1]["externalUrl"],
-            "https://open.spotify.com/track/3IwAWUa9JeTbwumBPvnOj9",
+            "https://open.spotify.com/track/1UnNQ4xqCGFH279AQi68XE",
         )
         self.assertEqual(
             state["musiq"]["songQueue"][2]["externalUrl"],
-            "https://open.spotify.com/track/3vMrcGW4o35zY6vXjWb1p7",
+            "https://open.spotify.com/track/0161x17UsgPtluoi4OIVI8",
         )
         self.assertEqual(
             state["musiq"]["songQueue"][3]["externalUrl"],
-            "https://open.spotify.com/track/6Jf7Sx68vsWFKeWjOxcLhQ",
+            "https://open.spotify.com/track/7yISlDyywvoXKgz6WxRKAI",
         )
 
     def test_autoplay(self):
         self.client.post(
             reverse("request-music"),
             {
-                "query": "https://open.spotify.com/track/4VqPOruhp5EdPBeR92t6lQ",
+                "query": "https://open.spotify.com/track/0o261w05EPiGfxNtVlWn6m",
                 "playlist": "false",
                 "platform": "spotify",
             },
@@ -167,7 +167,7 @@ class SpotifyTests(MusicTest):
         self.client.post(
             reverse("request-music"),
             {
-                "query": "https://open.spotify.com/track/4VqPOruhp5EdPBeR92t6lQ",
+                "query": "https://open.spotify.com/track/0o261w05EPiGfxNtVlWn6m",
                 "playlist": "false",
                 "platform": "spotify",
             },

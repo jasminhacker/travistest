@@ -5,7 +5,7 @@ from threading import Thread
 from django.conf import settings as conf
 from django.urls import reverse
 
-from core.musiq import playback, controller
+from core.musiq import playback, mopidy_player
 from core.settings import storage
 from tests import util
 from tests.raveberry_test import RaveberryTest
@@ -25,10 +25,12 @@ class MusicTest(RaveberryTest):
         self.playback_thread = Thread(
             target=playback._loop  # pylint: disable=protected-access
         )
+        # TODO: there was (is?) an issue where skipping a test did not call tearDown,
+        # leaving this thread running.
         self.playback_thread.start()
 
         # mute player for testing
-        self.player = controller.PLAYER
+        self.player = mopidy_player.PLAYER
         self.player.mixer.set_volume(0)
 
     def tearDown(self):
@@ -76,33 +78,24 @@ class MusicTest(RaveberryTest):
         return current_song
 
     def _add_local_playlist(self):
-        suggestion = json.loads(
-            self.client.get(
-                reverse("offline-suggestions"), {"term": "ogg", "playlist": "true"}
-            ).content
-        )[0]
-        # add the same queue twice to get four songs into the queue
-        self.client.post(
-            reverse("request-music"),
-            {
-                "key": suggestion["key"],
-                "query": "",
-                "playlist": "true",
-                "platform": "local",
-            },
-        )
-        self.client.post(
-            reverse("request-music"),
-            {
-                "key": suggestion["key"],
-                "query": "",
-                "playlist": "true",
-                "platform": "local",
-            },
-        )
+        for term in "other", "heroes":
+            suggestion = json.loads(
+                self.client.get(
+                    reverse("offline-suggestions"), {"term": term, "playlist": "true"}
+                ).content
+            )[0]
+            self.client.post(
+                reverse("request-music"),
+                {
+                    "key": suggestion["key"],
+                    "query": "",
+                    "playlist": "true",
+                    "platform": "local",
+                },
+            )
         state = self._poll_musiq_state(
             lambda state: state["musiq"]["currentSong"]
-            and len(state["musiq"]["songQueue"]) == 3
+            and len(state["musiq"]["songQueue"]) == 4
             and all(song["internalUrl"] for song in state["musiq"]["songQueue"]),
             timeout=3,
         )

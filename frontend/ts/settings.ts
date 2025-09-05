@@ -32,6 +32,8 @@ function updateState(state) {
       element.prop('checked', value);
     } else if (element.is('input')) {
       element.val(value);
+    } else if (element.is('select')) {
+      element.val(value);
     } else if (element.is('div')) {
       element.text(value);
     } else if (element.is('span')) {
@@ -161,17 +163,76 @@ export function onReady() {
     }
   }
 
+  $('#interactivity').on('change', function() {
+    post(urls['settings']['set-interactivity'],
+        {value: (<HTMLInputElement> this).value});
+  });
+
+  $('#color-indication').on('change', function() {
+    post(urls['settings']['set-color-indication'],
+        {value: (<HTMLInputElement> this).value});
+  });
+
   registerPostOnClick('trigger-alarm');
 
   registerPostOnClick('check-internet');
   registerPostOnClick('update-user-count');
 
-  registerPostOnClick('set-spotify-credentials', () => {
+  function update_authorize_url() {
+    const client_id = $('#spotify-device-client-id').val();
+    const redirect_uri = $('#spotify-redirect-uri').val();
+
+    if (!client_id || !redirect_uri) {
+      $('#spotify-authorize-url').empty();
+      $('#spotify-authorize-url').text("Fill out previous fields");
+      return;
+    }
+
+    const parameters = {
+      "client_id": client_id,
+      "response_type": "code",
+      "redirect_uri": redirect_uri,
+      "scope": SPOTIFY_SCOPE,
+    }
+    let url = SPOTIFY_OAUTH_AUTHORIZE_URL + "?";
+    let first = true;
+    for (const key in parameters) {
+      if (first) {
+        first = false;
+      } else {
+        url += "&";
+      }
+      url += key + "=" + encodeURIComponent(parameters[key]);
+    }
+
+    $('#spotify-authorize-url').empty();
+    $("<a>")
+        .attr("href",url)
+        .attr("target","_blank")
+        .attr("rel", "noopener")
+        .text("click me")
+        .appendTo($('#spotify-authorize-url'));
+
+  }
+  $('#spotify-client-id').on("change", update_authorize_url);
+  $('#spotify-redirect-uri').on("change", update_authorize_url);
+  update_authorize_url();
+
+  registerPostOnClick('set-spotify-device-credentials', () => {
+    return {
+      client_id: $('#spotify-device-client-id').val(),
+      client_secret: $('#spotify-device-client-secret').val(),
+      redirect_uri: $('#spotify-redirect-uri').val(),
+      authorized_url: $('#spotify-authorized-url').val(),
+    };
+  });
+
+  registerPostOnClick('set-spotify-mopidy-credentials', () => {
     return {
       username: $('#spotify-username').val(),
       password: $('#spotify-password').val(),
-      client_id: $('#spotify-client-id').val(),
-      client_secret: $('#spotify-client-secret').val(),
+      client_id: $('#spotify-mopidy-client-id').val(),
+      client_secret: $('#spotify-mopidy-client-secret').val(),
     };
   });
 
@@ -202,23 +263,17 @@ export function onReady() {
 
   registerPostOnClick('disconnect-bluetooth');
 
-  $('#output').focus(function() {
+  $('#output').on('focus', function() {
     $.get(urls['settings']['list-outputs']).done(function(devices) {
-      $('#output').autocomplete({
-        // always show all possible output devices,
-        // regardless of current input content
-        source: function(request, response) {
-          response(devices);
-        },
-        close: function() {
-          // manually trigger the change event when an element is clicked
-          // in order to send the post request
-          $('#output').trigger('change');
-        },
-        minLength: 0,
+      $('#output').empty();
+      $.each(devices, function(index: number, device) {
+        $('<option>').attr('data-id', device.id).text(device.name).appendTo($('#output'));
       });
-      $('#output').autocomplete('search');
     });
+  });
+  $('#output').on('change', function() {
+    const selected = $("#output option:selected");
+    post(urls['settings']['set-output'], {value: selected.data("id")});
   });
 
   registerPostOnClick('delete-current-song');
@@ -400,8 +455,8 @@ export function onReady() {
   };
 
   // show basic settings by default
-  if (localStorageGet("Basic Settings:collapsed") === null) {
-    localStorageSet("Basic Settings:collapsed", false);
+  if (localStorageGet('Basic Settings:collapsed') === null) {
+    localStorageSet('Basic Settings:collapsed', false);
   }
 
   $('.list-header').each((_, li) => {
@@ -420,7 +475,8 @@ export function onReady() {
     $(this).children('.settings-collapser').toggleClass('collapsed');
 
     const storageKey = $(this).children('span').text() + ':collapsed';
-    localStorageSet(storageKey, $(this).children('.settings-collapser').hasClass('collapsed'));
+    localStorageSet(storageKey,
+        $(this).children('.settings-collapser').hasClass('collapsed'));
   });
 
   const fragment = window.location.hash.substr(1);

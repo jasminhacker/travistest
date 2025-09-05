@@ -5,7 +5,7 @@ from __future__ import annotations
 import subprocess
 
 from django.core.handlers.wsgi import WSGIRequest
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 
 from core import redis, user_manager
 from core.musiq import playback
@@ -34,10 +34,30 @@ def _check_internet() -> None:
 
 
 @control
-def set_voting_enabled(request: WSGIRequest) -> HttpResponse:
+def set_interactivity(request: WSGIRequest) -> HttpResponse:
     """Enables or disables voting based on the given value."""
     value, response = extract_value(request.POST)
-    storage.put("voting_enabled", strtobool(value))
+    if value not in [
+        getattr(storage.Interactivity, attr)
+        for attr in dir(storage.Interactivity)
+        if not attr.startswith("__")
+    ]:
+        return HttpResponseBadRequest("Invalid value")
+    storage.put("interactivity", value)
+    return response
+
+
+@control
+def set_color_indication(request: WSGIRequest) -> HttpResponse:
+    """Enables or disables voting based on the given value."""
+    value, response = extract_value(request.POST)
+    if value not in [
+        getattr(storage.Privileges, attr)
+        for attr in dir(storage.Privileges)
+        if not attr.startswith("__")
+    ]:
+        return HttpResponseBadRequest("Invalid value")
+    storage.put("color_indication", value)
     return response
 
 
@@ -74,18 +94,10 @@ def set_hashtags_active(request: WSGIRequest) -> HttpResponse:
 
 
 @control
-def set_embed_stream(request: WSGIRequest) -> HttpResponse:
+def set_privileged_stream(request: WSGIRequest) -> HttpResponse:
     """Enables or disables logging of requests and play logs based on the given value."""
     value, response = extract_value(request.POST)
-    storage.put("embed_stream", strtobool(value))
-    return response
-
-
-@control
-def set_dynamic_embedded_stream(request: WSGIRequest) -> HttpResponse:
-    """Enables or disables dynamic streaming based on the given value."""
-    value, response = extract_value(request.POST)
-    storage.put("dynamic_embedded_stream", strtobool(value))
+    storage.put("privileged_stream", strtobool(value))
     return response
 
 
@@ -130,6 +142,14 @@ def set_new_music_only(request: WSGIRequest) -> HttpResponse:
     """Enables or disables the new music only mode based on the given value."""
     value, response = extract_value(request.POST)
     storage.put("new_music_only", strtobool(value))
+    return response
+
+
+@control
+def set_enqueue_first(request: WSGIRequest) -> HttpResponse:
+    """Enables or disables the new music only mode based on the given value."""
+    value, response = extract_value(request.POST)
+    storage.put("enqueue_first", strtobool(value))
     return response
 
 
@@ -216,8 +236,8 @@ def set_buzzer_success_probability(request: WSGIRequest) -> HttpResponse:
 @control
 def trigger_alarm(_request: WSGIRequest) -> None:
     """Manually triggers an alarm."""
-    playback.trigger_alarm()
-    # because a state update is sent after every control (including this one)
-    # a state update with alarm not being set would be sent
-    # prevent this by manually setting this redis variable prematurely
-    redis.put("alarm_playing", True)
+    if playback.trigger_alarm():
+        # because a state update is sent after every control (including this one)
+        # a state update with alarm not being set would be sent
+        # prevent this by manually setting this redis variable prematurely
+        redis.put("alarm_playing", True)

@@ -17,7 +17,7 @@ from core.models import (
     PlayLog,
 )
 from core.musiq import musiq, playback, song_utils
-from core.musiq.music_provider import MusicProvider, WrongUrlError
+from core.musiq.music_provider import MusicProvider, WrongUrlError, ProviderError
 from core.musiq.song_utils import Metadata
 from core.settings import storage
 
@@ -78,7 +78,7 @@ class SongProvider(MusicProvider):
 
             provider_class = JamendoSongProvider
         if not provider_class:
-            raise NotImplementedError(f"No provider for given song: {external_url}")
+            raise ProviderError(f"No provider for given song: {external_url}")
         if not query and external_url:
             query = external_url
         provider = provider_class(query, key)
@@ -160,7 +160,10 @@ class SongProvider(MusicProvider):
         }
         initial_votes = 1 if manually_requested else 0
         self.queued_song = playback.queue.enqueue(
-            metadata, manually_requested, votes=initial_votes
+            metadata,
+            manually_requested,
+            votes=initial_votes,
+            enqueue_first=storage.get("enqueue_first"),
         )
 
     def remove_placeholder(self) -> None:
@@ -194,13 +197,20 @@ class SongProvider(MusicProvider):
         Used by localdrive and youtube."""
         if not self.id:
             raise ValueError()
+
+        get_metadata_from_fs = False
         try:
             # Try to read the metadata from the database
             archived_song = ArchivedSong.objects.get(url=self.get_external_url())
             metadata = archived_song.get_metadata()
+            if not metadata["cached"]:
+                get_metadata_from_fs = True
         except ArchivedSong.DoesNotExist:
-            # If this is not possible, read it from the file system
+            get_metadata_from_fs = True
+        # If this is not possible, or the metadata is not cached, read it from the file system
+        if get_metadata_from_fs:
             metadata = song_utils.get_metadata(path)
+
         metadata["internal_url"] = self.get_internal_url()
         metadata["external_url"] = self.get_external_url()
         metadata["stream_url"] = None
