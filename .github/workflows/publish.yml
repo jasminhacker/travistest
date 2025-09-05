@@ -13,7 +13,7 @@ jobs:
         with:
           python-version: '3.12'
       - uses: actions/setup-node@v4
-        with:a
+        with:
           node-version: 'lts/*'
       - run: pip install -r backend/requirements/frontend_build.txt
       - run: yarn --cwd frontend install
@@ -124,3 +124,69 @@ jobs:
           done
           # exit with failure if curl did not succeed in any iteration
           [ $counter != 31 ]
+  check-versions:
+    runs-on: ubuntu-latest
+    outputs:
+      # use output instead of conclusion because there are issues if the step does not succeed
+      docker-status: ${{ steps.comparison.outputs.docker-status }}
+      pypi-status: ${{ steps.comparison.outputs.pypi-status }}
+    steps:
+      - uses: actions/checkout@v4
+      # https://docs.github.com/en/actions/learn-github-actions/workflow-commands-for-github-actions#setting-an-environment-variable
+      - run: echo "GITHUB_VERSION=$(cat backend/VERSION | tr -d '[:space:]')" >> $GITHUB_ENV
+      - run: echo "PYPI_VERSION=$(curl -Ls https://pypi.org/pypi/raveberry/json | jq -r .info.version | tr -d '[:space:]')" >> $GITHUB_ENV
+      - run: echo "DOCKER_VERSION=$(docker pull raveberry/raveberry >/dev/null && docker run raveberry/raveberry /bin/cat /opt/raveberry/VERSION | tr -d '[:space:]')" >> $GITHUB_ENV
+      - name: Compare versions
+        id: comparison
+        run: |
+          if [ "$DOCKER_VERSION" != "$GITHUB_VERSION" ]; then echo "::set-output name=docker-status::update"; fi
+          if [ "$PYPI_VERSION" != "$GITHUB_VERSION" ]; then echo "::set-output name=pypi-status::update"; fi
+  pypi-publish:
+    runs-on: ubuntu-latest
+    needs: [test-frontend, test-backend, test-install, check-versions]
+    if: needs.check-versions.outputs.pypi-status == 'update'
+    # from https://packaging.python.org/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: frontend-files
+          path: backend/static/
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+      - name: Install pypa/build
+        run: pip install build --user
+      - name: Rename module folder
+        run: ln -s backend raveberry
+      - name: Build a binary wheel and a source tarball
+        run: python -m build --sdist --wheel --outdir dist/
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
+  docker-publish:
+    runs-on: ubuntu-latest
+    needs: [test-frontend, test-backend, test-install, check-versions]
+    if: needs.check-versions.outputs.docker-status == 'update'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: frontend-files
+          path: backend/static/
+      - run: echo "VERSION=$(cat backend/VERSION | tr -d '[:space:]')" >> $GITHUB_ENV
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+      - uses: docker/login-action@v1
+        with:
+          username: raveberry
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - uses: docker/setup-qemu-action@v1
+      - uses: docker/setup-buildx-action@v1
+      - run: pip install "django==4.*"
+      - name: Copy static admin files
+        run: cp -r "$(python -c 'import django, os; print(f"{os.path.dirname(django.__file__)}/contrib/admin/static/admin")')" backend/static/admin
+      - run: "docker buildx build --platform linux/amd64,linux/arm/v7 --output type=registry -f docker/Dockerfile -t raveberry/raveberry:$VERSION -t raveberry/raveberry ."
+      - run: "docker buildx build --platform linux/amd64,linux/arm/v7 --output type=registry -f docker/nginx.Dockerfile -t raveberry/raveberry-nginx:$VERSION -t raveberry/raveberry-nginx ."
