@@ -74,7 +74,7 @@ class MusicTest(RaveberryTest):
         return current_song
 
     def _add_local_playlist(self):
-        for term in "other", "heroes":
+        for term in "other", "brahms":
             suggestion = json.loads(
                 self.client.get(
                     reverse("offline-suggestions"), {"term": term, "playlist": "true"}
