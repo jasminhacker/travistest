@@ -6,12 +6,13 @@ from django.core.asgi import get_asgi_application
 
 import core.routing
 
+# Initialize Django ASGI application early to ensure the AppRegistry
+# is populated before importing code that may import ORM models.
+django_asgi_app = get_asgi_application()
+
 APPLICATION = ProtocolTypeRouter(
     {
+        "http": django_asgi_app,
         "websocket": AuthMiddlewareStack(URLRouter(core.routing.WEBSOCKET_URLPATTERNS)),
-        # using django's asgi application for http requests allows async processing
-        # since django 4.0 due to context aware sync_to_async
-        # https://github.com/django/django/pull/13882
-        "http": get_asgi_application(),
     }
 )

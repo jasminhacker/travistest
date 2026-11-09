@@ -1,2 +1,0 @@
-beautifulsoup4>=4.9.3
-soundcloud>=0.5.0

@@ -167,24 +167,10 @@ export function errorToast(firstLine, secondLine?) {
 export function updateBaseState(state) {
   $('#users').text(state.users);
   $('#visitors').text(state.visitors);
-  if (state.lightsEnabled) {
-    $('#lights-indicator').addClass('icon-enabled');
-    $('#lights-indicator').removeClass('icon-disabled');
-  } else {
-    $('#lights-indicator').removeClass('icon-enabled');
-    $('#lights-indicator').addClass('icon-disabled');
-  }
   if (state.partymode) {
     $('#navbar-icon').addClass('partymode');
   } else {
     $('#navbar-icon').removeClass('partymode');
-  }
-  if (state.alarm) {
-    $('body').addClass('alarm');
-    $('#progress-bar').addClass('alarm');
-  } else {
-    $('body').removeClass('alarm');
-    $('#progress-bar').removeClass('alarm');
   }
 
   if (localStorageGet('platform') === null ||
@@ -245,7 +231,7 @@ export function decideScrolling(span, secondsPerPixel, staticSeconds) {
     const movingSeconds = spaceOverflowed * secondsPerPixel;
     const duration = (staticSeconds + movingSeconds) * 2;
 
-    const animationName = 'marquee-' + span.attr('id') + '-' + $.now();
+    const animationName = 'marquee-' + span.attr('id') + '-' + Date.now();
     const keyframes = {};
     keyframes['name'] = animationName;
     keyframes['0%'] = {transform: 'translate(0, 0)'};
@@ -275,12 +261,10 @@ function updatePlatformClasses() {
   $('#local').removeClass('icon-enabled');
   $('#youtube').removeClass('icon-enabled');
   $('#spotify').removeClass('icon-enabled');
-  $('#soundcloud').removeClass('icon-enabled');
   $('#jamendo').removeClass('icon-enabled');
   $('#local').addClass('icon-disabled');
   $('#youtube').addClass('icon-disabled');
   $('#spotify').addClass('icon-disabled');
-  $('#soundcloud').addClass('icon-disabled');
   $('#jamendo').addClass('icon-disabled');
   if (localStorageGet('platform') == 'local') {
     $('#local').removeClass('icon-disabled');
@@ -291,9 +275,6 @@ function updatePlatformClasses() {
   } else if (localStorageGet('platform') == 'spotify') {
     $('#spotify').removeClass('icon-disabled');
     $('#spotify').addClass('icon-enabled');
-  } else if (localStorageGet('platform') == 'soundcloud') {
-    $('#soundcloud').removeClass('icon-disabled');
-    $('#soundcloud').addClass('icon-enabled');
   } else if (localStorageGet('platform') == 'jamendo') {
     $('#jamendo').removeClass('icon-disabled');
     $('#jamendo').addClass('icon-enabled');
@@ -516,13 +497,6 @@ export function onReady() {
     }
   });
 
-  // enable/disable lights
-  $('#lights-indicator').on('click tap', function() {
-    $.post(urls['set-lights-shortcut'], {
-      value: !$(this).hasClass('icon-enabled'),
-    });
-  });
-
   $('#theme-container').on('click tap', function() {
     toggleTheme();
   });
@@ -555,13 +529,6 @@ export function onReady() {
       return;
     }
     localStorageSet('platform', 'spotify', 1);
-    updatePlatformClasses();
-  });
-  $('#soundcloud').on('click tap', function() {
-    if ($(this).hasClass('icon-enabled')) {
-      return;
-    }
-    localStorageSet('platform', 'soundcloud', 1);
     updatePlatformClasses();
   });
   $('#jamendo').on('click tap', function() {

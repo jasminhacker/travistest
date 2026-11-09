@@ -14,7 +14,6 @@ from django.db import connection, transaction
 from django.utils import timezone
 
 from core import models, redis, user_manager
-from core.lights import controller as lights_controller
 from core.musiq import musiq
 from core.settings import storage
 from core.tasks import app
@@ -22,7 +21,6 @@ from core.musiq import song_utils
 from core.models import CurrentSong
 
 queue_changed = redis.Event("queue_changed")
-buzzer_stopped = redis.Event("buzzer_stopped")
 
 queue = models.QueuedSong.objects
 
@@ -32,10 +30,9 @@ class PlaybackError(Exception):
 
 
 def start() -> None:
-    """Initializes this module by starting the playback and buzzer loop."""
+    """Initializes this module by starting the playback."""
     paused = storage.get("paused")
     redis.put("paused", paused)
-    _handle_buzzer.delay()
     _loop.delay()
 
 
@@ -66,47 +63,13 @@ class Playback:
             "spotify-"
         ):
             redis.put("active_player", "spotify")
-        elif not redis.get("mopidy_available"):
-            redis.put("active_player", "fake")
-        else:
+        elif redis.get("mopidy_available"):
             redis.put("active_player", "mopidy")
+        else:
+            redis.put("active_player", "fake")
 
     def player(self):
         return self.players[redis.get("active_player")]
-
-    def play_alarm(self, interrupt=False, from_buzzer=True) -> None:
-        """Play the alarm sound. If specified, interrupts the currently playing song."""
-        redis.put("alarm_playing", True)
-        lights_controller.alarm_started()
-
-        success_probability = storage.get("buzzer_success_probability")
-        if success_probability >= 0 and from_buzzer:
-            if random.random() <= success_probability:
-                folder = "resources/sounds/yes"
-            else:
-                folder = "resources/sounds/no"
-            choice = random.choice(os.listdir(os.path.join(conf.BASE_DIR, folder)))
-            path = os.path.join(conf.BASE_DIR, folder, choice)
-        else:
-            path = os.path.join(conf.BASE_DIR, "resources/sounds/alarm.m4a")
-        duration = song_utils.get_metadata(path)["duration"]
-
-        redis.put("alarm_duration", duration)
-
-        self.player().play_alarm(interrupt, path)
-
-        musiq.update_state()
-
-        # TODO: is it a very bad idea to simply sleep here for the duration of the alarm?
-        # self._wait_until_song_end()
-        time.sleep(duration)
-
-        lights_controller.alarm_stopped()
-        redis.put("alarm_playing", False)
-
-        if not interrupt:
-            # if no song immediately continues playing, a manual state update is needed
-            musiq.update_state()
 
     def _get_next_song(self) -> Tuple[Optional[models.CurrentSong], bool]:
         """Returns the next song that should be played, or None if no song should be played.
@@ -151,14 +114,6 @@ class Playback:
             # of songs in the queue or a race condition occured
             logging.warning("dequeued on empty list")
             return None, False
-
-        if song.internal_url == "alarm":
-            self.play_alarm()
-            return None, False
-
-        # stop backup stream.
-        # when the dequeued song starts playing, the backup stream playback is stopped
-        redis.put("backup_playing", False)
 
         assert song.internal_url
         current_song = models.CurrentSong.objects.create(
@@ -253,27 +208,10 @@ class Playback:
                 # in order to stop the playback thread, return False, making the main loop restart.
                 # it will check this variable again and terminate itself.
                 return False
-            if redis.get("alarm_requested"):
-                redis.put("alarm_requested", False)
-                self.play_alarm(interrupt=True)
-                # the current song was interrupted and needs to be resumed at the correct position
-                # returning False will notify the main loop about this interruption,
-                # making it restart the song correctly
-                # we don't want the song to skip over the time when the alarm was playing
-                # thus, we offset the creation date of the current song by the length of the alarm
-                # Warning: if this duration does not fit the duration of the actual alarm,
-                # Raveberry's internal state gets desynced and weird errors happen
-                current_song.created += datetime.timedelta(
-                    seconds=redis.get("alarm_duration")
-                )
-                current_song.save()
-
-                return False
         return not error
 
     def _song_finished(self, current_song: models.CurrentSong) -> None:
-        """Handles things that might need to happen after a song ended,
-        e.g.repeat, alarm and backup stream."""
+        """Handles things that might need to happen after a song ended, like repeat."""
         if storage.get("repeat"):
             queue.enqueue(
                 {
@@ -288,15 +226,6 @@ class Playback:
                 enqueue_first=False,
             )
             queue_changed.set()
-
-        if user_manager.partymode_enabled() and random.random() < storage.get(
-            "alarm_probability"
-        ):
-            self.play_alarm(from_buzzer=False)
-
-        if not queue.exists() and storage.get("backup_stream"):
-            redis.put("backup_playing", True)
-            self.player().play_backup_stream()
 
         musiq.update_state()
 
@@ -336,8 +265,7 @@ class Playback:
                 if not self._wait_until_song_end():
                     # there was an error while waiting for the song to end
                     # This happens when we could not connect to mopidy (ConnectionError)
-                    # or when an interrupting alarm was initiated.
-                    # we do not delete the current song but recover its state by restarting the loop
+                    # We do not delete the current song but recover its state by restarting the loop
                     storage.put("paused", False)
                     redis.put("paused", False)
                     redis.put("playing", False)
@@ -358,47 +286,6 @@ def _loop() -> None:
     playback = Playback()
     playback.loop()
     connection.close()
-
-
-@app.task
-def _handle_buzzer() -> None:
-    try:
-        import gpiozero
-    except ModuleNotFoundError:
-        return
-    buzzer = gpiozero.Button(16)
-
-    def on_press():
-        trigger_alarm()
-
-    buzzer.when_pressed = on_press
-
-    # wait until this task is told to exit
-    buzzer_stopped.wait()
-
-
-def trigger_alarm() -> bool:
-    """Initiate an alarm."""
-    # do not allow the alarm to be triggered too frequently
-    now = time.time()
-    if (now - redis.get("last_buzzer")) < storage.get("buzzer_cooldown"):
-        logging.warning("alarm triggered too quickly")
-        return False
-    # do not allow an alarm to be triggered while one is already playing
-    # or when an alarm is currently in the process of being played
-    if redis.get("alarm_playing") or redis.get("alarm_requested"):
-        logging.warning("last alarm not yet finished")
-        return False
-    redis.put("last_buzzer", now)
-    if redis.get("playing"):
-        # if a song is currently playing, inform the loop waiting for the song to end
-        # about this alarm. It will interrupt the current song and play the alarm
-        redis.put("alarm_requested", True)
-    else:
-        # insert a special queue song to wake up the main loop and make it play the alarm
-        queue.enqueue(musiq.get_alarm_metadata(), True)
-        queue_changed.set()
-    return True
 
 
 def handle_autoplay(url: Optional[str] = None) -> None:

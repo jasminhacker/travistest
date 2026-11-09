@@ -1,4 +1,5 @@
 """Contains all database models."""
+
 from typing import TYPE_CHECKING
 
 from django.db import connection, models

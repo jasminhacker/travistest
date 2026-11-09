@@ -42,20 +42,20 @@ span.clearable input {
 }
 #clearbutton {
 	// make the click area bigger but keep centered
-	margin: -10px -10px;
-	padding: 10px 10px;
+	margin-top: -15px;
+	padding: 15px;
 }
 
 // autocomplete
 .ui-autocomplete {
-    position: absolute;
-    z-index: 1000;
-    cursor: default;
-    padding: 0;
-    margin-top: 2px;
-    list-style: none;
-    background-color: #ffffff;
-    border: 1px solid #ccc;
+	position: absolute;
+	z-index: 1000;
+	cursor: default;
+	padding: 0;
+	margin-top: 2px;
+	list-style: none;
+	background-color: #ffffff;
+	border: 1px solid #ccc;
 	color: #495057;
 	border-radius: 5px;
 	box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
@@ -162,7 +162,7 @@ span.clearable input {
 }
 #song-votes > i {
 	flex-grow: 0;
-	padding: 0 6px 0 6px;
+	margin: 0 6px 0 6px;
 }
 .current-song-vote-indicators {
 	display: flex;
@@ -183,6 +183,7 @@ span.clearable input {
 	text-align: center;
 }
 #song-control-icons>i {
+	width: 44px;
 	padding-top: 8px;
 	padding-bottom: 8px;
 	padding-left: 10px;
@@ -199,7 +200,7 @@ span.clearable input {
 	font-size: xx-large;
 
 	// css hack to center play button
-	margin-right: 31px;
+	margin-right: 37px;
 }
 
 #additional-controls {
@@ -223,10 +224,6 @@ span.clearable input {
 }
 #volume-slider-container {
 	width: 50%;
-}
-#queue-controls i {
-	padding-left: 10px;
-	padding-right: 10px;
 }
 #queue-controls {
 	width: 25%;
@@ -261,14 +258,14 @@ $entry-height: 50px;
 	position: absolute;
 	width: 100%;
 	height: 100%;
-    animation: downloading 2s linear infinite;
+	animation: downloading 2s linear infinite;
 	background: linear-gradient(transparent 50%, var(--elevated-background) 0%);
 	background-size: 200% 200%;
 }
 @keyframes downloading {
-    0%{background-position:0% 100%}
-    60%{background-position:0% 0%}
-    100%{background-position:0% 0%}
+	0%{background-position:0% 100%}
+	60%{background-position:0% 0%}
+	100%{background-position:0% 0%}
 }
 .queue-index {
 	flex: 0 0 100%;
@@ -313,8 +310,7 @@ $entry-height: 50px;
 	flex-shrink: 0;
 }
 .queue-info-controls>i {
-	padding-left: 8px;
-	padding-right: 8px;
+	margin: 0 3px 0 3px;
 }
 
 .vote-up.pressed {

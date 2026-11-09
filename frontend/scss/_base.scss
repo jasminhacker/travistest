@@ -31,22 +31,6 @@
 	90%      { fill: hsl(288, 13%, 62%); }
 }
 
-.alarm {
-	animation: fade 2.5s linear 4;
-}
-
-@keyframes fade {
-	  0% {background-color: var(--background)}
-	/*
-	 18% {background-color: var(--red)}
-	 48% {background-color: var(--red)}
-	 */
-	 18% {background-color: red;}
-	 48% {background-color: red;}
-	 80% {background-color: var(--background)}
-	100% {background-color: var(--background)}
-}
-
 #hashtag-container {
 	width: 60%;
 	text-align: center;
@@ -95,7 +79,7 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	justify-content: center;
+	justify-content: flex-end;
 }
 .with-description>span {
 	margin-top: -5px;
@@ -134,10 +118,6 @@
 	transform: translateX(-10px) translateY(-10px);
 }
 
-#lights-indicator.icon-enabled {
-	color: yellow;
-}
-
 #shareberry-icon {
 	fill: var(--normal-text);
 	margin-bottom: 3px;
@@ -155,9 +135,6 @@
 }
 #platform-controls > i.icon-enabled#spotify {
 	color: #1ED760 /*spotify green*/;
-}
-#platform-controls > i.icon-enabled#soundcloud {
-	color: #F95401 /*soundcloud orange*/;
 }
 #platform-controls > i.icon-enabled#jamendo {
 	color: #ff1f59;

@@ -121,7 +121,7 @@ body {
 	right: 0;
 	left: 0;
 	height: 90vh;
-    z-index: 10;
+	z-index: 10;
 	pointer-events: none;
 
 	display: flex;
@@ -266,6 +266,4 @@ body {
 @import "extra-icons";
 @import "base";
 @import "musiq";
-@import "lights";
 @import "settings";
-@import "network-info";

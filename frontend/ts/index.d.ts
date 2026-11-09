@@ -18,7 +18,6 @@ declare const FORBIDDEN_KEYWORDS: string;
 declare const CLIENT_STREAMING: boolean;
 declare const YOUTUBE_SUGGESTIONS: number;
 declare const SPOTIFY_SUGGESTIONS: number;
-declare const SOUNDCLOUD_SUGGESTIONS: number;
 declare const JAMENDO_SUGGESTIONS: number;
 
 declare const SPOTIFY_SCOPE: string;

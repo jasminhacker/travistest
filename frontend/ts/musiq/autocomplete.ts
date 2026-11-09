@@ -25,7 +25,6 @@ export function onReady() {
       const suggestionCounts = {
         'youtube': YOUTUBE_SUGGESTIONS,
         'spotify': SPOTIFY_SUGGESTIONS,
-        'soundcloud': SOUNDCLOUD_SUGGESTIONS,
         'jamendo': JAMENDO_SUGGESTIONS,
       };
       let totalSuggestionCount = 0;
@@ -118,8 +117,6 @@ export function onReady() {
         requestNewMusic(ui.item.label, 'youtube');
       } else if (ui.item.type == 'spotify-online') {
         requestNewMusic(ui.item.key, 'spotify');
-      } else if (ui.item.type == 'soundcloud-online') {
-        requestNewMusic(ui.item.label, 'soundcloud');
       } else if (ui.item.type == 'jamendo-online') {
         requestNewMusic(ui.item.label, 'jamendo');
       } else {
@@ -172,9 +169,6 @@ export function onReady() {
     } else if (item.type.startsWith('spotify')) {
       icon.addClass('fab')
           .addClass('fa-spotify');
-    } else if (item.type.startsWith('soundcloud')) {
-      icon.addClass('fab')
-          .addClass('fa-soundcloud');
     } else if (item.type.startsWith('jamendo')) {
       icon.addClass('fas')
           .addClass('fa-jamendo');

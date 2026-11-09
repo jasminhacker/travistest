@@ -1,4 +1,5 @@
 """This module contains the base class of all playlist providers."""
+
 import logging
 import time
 from typing import List, Optional, Type
@@ -57,10 +58,6 @@ class PlaylistProvider(MusicProvider):
             from core.musiq.spotify import SpotifyPlaylistProvider
 
             provider_class = SpotifyPlaylistProvider
-        elif storage.get("soundcloud_enabled") and playlist_type == "soundcloud":
-            from core.musiq.soundcloud import SoundcloudPlaylistProvider
-
-            provider_class = SoundcloudPlaylistProvider
         elif storage.get("jamendo_enabled") and playlist_type == "jamendo":
             from core.musiq.jamendo import JamendoPlaylistProvider
 
@@ -214,7 +211,7 @@ class PlaylistProvider(MusicProvider):
                 logging.exception(error)
                 continue
 
-            if settings.DEBUG:
+            if settings.SQLITE:
                 # the sqlite database has problems if songs are pushed very fast
                 # while a new song is taken from the queue. Add a delay to mitigate.
                 time.sleep(1)

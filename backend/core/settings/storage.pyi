@@ -21,33 +21,15 @@ PlatformEnabled = Literal[
     "local_enabled",
     "youtube_enabled",
     "spotify_enabled",
-    "soundcloud_enabled",
     "jamendo_enabled",
 ]
 
 PlatformSuggestions = Literal[
     "youtube_suggestions",
     "spotify_suggestions",
-    "soundcloud_suggestions",
     "jamendo_suggestions",
 ]
 
-DeviceBrightness = Literal[
-    "ring_brightness", "strip_brightness", "wled_brightness", "screen_brightness"
-]
-DeviceMonochrome = Literal[
-    "ring_monochrome", "strip_monochrome", "wled_monochrome", "screen_monochrome"
-]
-DeviceProgram = Literal[
-    "ring_program",
-    "last_ring_program",
-    "strip_program",
-    "last_strip_program",
-    "wled_program",
-    "last_wled_program",
-    "screen_program",
-    "last_screen_program",
-]
 
 cache: TTLCache = TTLCache(ttl=10, maxsize=128)
 
@@ -64,18 +46,11 @@ def get(
         "local_enabled",
         "youtube_enabled",
         "spotify_enabled",
-        "soundcloud_enabled",
         "jamendo_enabled",
-        "feed_cava",
         "paused",
         "shuffle",
         "repeat",
         "autoplay",
-        "ring_monochrome",
-        "strip_monochrome",
-        "wled_monochrome",
-        "screen_monochrome",
-        "dynamic_resolution",
     ]
 ) -> bool: ...
 @overload
@@ -90,7 +65,6 @@ def get(
         "youtube_suggestions",
         "spotify_suggestions",
         "jamendo_suggestions",
-        "soundcloud_suggestions",
         "wled_led_count",
         "wled_port",
     ]
@@ -101,16 +75,7 @@ def get(
         "color_offset",
         "song_cooldown",
         "max_download_size",
-        "alarm_probability",
-        "buzzer_cooldown",
-        "buzzer_success_probability",
         "volume",
-        "ups",
-        "program_speed",
-        "ring_brightness",
-        "strip_brightness",
-        "wled_brightness",
-        "screen_brightness",
     ]
 ) -> float: ...
 @overload
@@ -121,28 +86,13 @@ def get(
         "connectivity_host",
         "additional_keywords",
         "forbidden_keywords",
-        "spotify_username",
-        "spotify_password",
-        "spotify_device_client_id",
-        "spotify_device_client_secret",
-        "spotify_mopidy_client_id",
-        "spotify_mopidy_client_secret",
+        "spotify_client_id",
+        "spotify_client_secret",
         "spotify_redirect_uri",
         "spotify_authorized_url",
         "spotipy_token_info",
-        "soundcloud_auth_token",
         "jamendo_client_id",
         "output",
-        "backup_stream",
-        "wled_ip",
-        "ring_program",
-        "last_ring_program",
-        "strip_program",
-        "last_strip_program",
-        "wled_program",
-        "last_wled_program",
-        "screen_program",
-        "last_screen_program",
     ]
 ) -> str: ...
 @overload
@@ -162,18 +112,11 @@ def put(
         "local_enabled",
         "youtube_enabled",
         "spotify_enabled",
-        "soundcloud_enabled",
         "jamendo_enabled",
-        "feed_cava",
         "paused",
         "shuffle",
         "repeat",
         "autoplay",
-        "ring_monochrome",
-        "strip_monochrome",
-        "wled_monochrome",
-        "screen_monochrome",
-        "dynamic_resolution",
     ],
     value: bool,
 ) -> None: ...
@@ -189,7 +132,6 @@ def put(
         "youtube_suggestions",
         "spotify_suggestions",
         "jamendo_suggestions",
-        "soundcloud_suggestions",
         "wled_led_count",
         "wled_port",
     ],
@@ -201,16 +143,7 @@ def put(
         "color_offset",
         "song_cooldown",
         "max_download_size",
-        "alarm_probability",
-        "buzzer_cooldown",
-        "buzzer_success_probability",
         "volume",
-        "ups",
-        "program_speed",
-        "ring_brightness",
-        "strip_brightness",
-        "wled_brightness",
-        "screen_brightness",
     ],
     value: float,
 ) -> None: ...
@@ -222,28 +155,13 @@ def put(
         "connectivity_host",
         "additional_keywords",
         "forbidden_keywords",
-        "spotify_username",
-        "spotify_password",
-        "spotify_device_client_id",
-        "spotify_device_client_secret",
-        "spotify_mopidy_client_id",
-        "spotify_mopidy_client_secret",
+        "spotify_client_id",
+        "spotify_client_secret",
         "spotify_redirect_uri",
         "spotify_authorized_url",
         "spotipy_token_info",
-        "soundcloud_auth_token",
         "jamendo_client_id",
         "output",
-        "backup_stream",
-        "wled_ip",
-        "ring_program",
-        "last_ring_program",
-        "strip_program",
-        "last_strip_program",
-        "wled_program",
-        "last_wled_program",
-        "screen_program",
-        "last_screen_program",
     ],
     value: str,
 ) -> None: ...

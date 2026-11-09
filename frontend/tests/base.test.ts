@@ -33,17 +33,12 @@ test('base state is updated', () => {
     'partymode': true,
     'users': 7,
     'visitors': 318,
-    'lightsEnabled': true,
-    'alarm': true,
     'defaultPlatform': 'youtube',
   };
   base.updateBaseState(state);
   expect($('#navbar-icon')[0]).toHaveClass('partymode');
   expect($('#users')[0]).toHaveTextContent('7');
   expect($('#visitors')[0]).toHaveTextContent('318');
-  expect($('#lights-indicator')[0]).toHaveClass('icon-enabled');
-  expect($('#lights-indicator')[0]).not.toHaveClass('icon-disabled');
-  expect($('body')[0]).toHaveClass('alarm');
 });
 
 test('hashtag is submitted', () => {

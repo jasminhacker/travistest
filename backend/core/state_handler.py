@@ -1,4 +1,5 @@
 """This module handles realtime communication via websockets."""
+
 import json
 from typing import Any, Dict
 

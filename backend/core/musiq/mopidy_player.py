@@ -122,21 +122,6 @@ class MopidyPlayer(player.Player):
             raise PlaybackError
         return False
 
-    def play_alarm(self, interrupt: bool, alarm_path: str) -> None:
-        self.playback_started.clear()
-        with mopidy_command(important=True):
-            # interrupt the current song if its playing
-            if interrupt:
-                PLAYER.tracklist.clear()
-
-            PLAYER.tracklist.add(uris=["file://" + urllib.parse.quote(alarm_path)])
-            PLAYER.playback.play()
-        self.playback_started.wait(timeout=1)
-
-    def play_backup_stream(self):
-        PLAYER.tracklist.add(uris=[storage.get("backup_stream")])
-        PLAYER.playback.play()
-
 
 def restart() -> None:
     with mopidy_command() as allowed:

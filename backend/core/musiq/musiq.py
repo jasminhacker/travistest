@@ -40,27 +40,12 @@ def start() -> None:
     playback.start()
 
 
-def get_alarm_metadata() -> "Metadata":
-    """Returns a metadata object for the alarm. The duration is dynamically determined."""
-    return {
-        "artist": "Raveberry",
-        "title": "ALARM!",
-        "duration": song_utils.get_metadata(
-            os.path.join(conf.BASE_DIR, "resources/sounds/alarm.m4a")
-        )["duration"],
-        "internal_url": "alarm",
-        "external_url": "https://raveberry.party/alarm",
-        "stream_url": None,
-        "cached": True,
-    }
-
-
 def enabled_platforms_by_priority() -> List[str]:
     """Returns a list of all available platforms, ordered by priority."""
     # local music can only be searched explicitly by key and thus is last
     return [
         platform
-        for platform in ["spotify", "youtube", "soundcloud", "jamendo", "local"]
+        for platform in ["spotify", "youtube", "jamendo", "local"]
         if storage.get(cast(PlatformEnabled, f"{platform}_enabled"))
     ]
 
@@ -207,10 +192,10 @@ def index(request: WSGIRequest) -> HttpResponse:
     context["additional_keywords"] = storage.get("additional_keywords")
     context["forbidden_keywords"] = storage.get("forbidden_keywords")
     context["client_streaming"] = storage.get("output") == "client"
-    context["show_stream"] = storage.get("output") in ["client", "icecast"] and (
+    context["show_stream"] = storage.get("output") in ["client"] and (
         not storage.get("privileged_stream") or context["controls_enabled"]
     )
-    for platform in ["youtube", "spotify", "soundcloud", "jamendo"]:
+    for platform in ["youtube", "spotify", "jamendo"]:
         if (
             storage.get("online_suggestions")
             and not storage.get("new_music_only")
@@ -307,31 +292,6 @@ def state_dict() -> Dict[str, Any]:
         total_time += song_dict["duration"]
     musiq_state["totalTimeFormatted"] = song_utils.format_seconds(total_time)
     musiq_state["songQueue"] = song_queue
-
-    if state["alarm"]:
-        musiq_state["currentSong"] = {
-            "queueKey": -1,
-            "manuallyRequested": False,
-            "votes": 0,
-            "created": "",
-            # https://github.com/python/mypy/issues/4976
-            **util.camelize(cast(Dict[Any, Any], get_alarm_metadata())),
-        }
-        musiq_state["progress"] = 0
-        musiq_state["paused"] = False
-    elif redis.get("backup_playing"):
-        musiq_state["currentSong"] = {
-            "queueKey": -1,
-            "manuallyRequested": False,
-            "votes": 0,
-            "internalUrl": "backup_stream",
-            "externalUrl": storage.get("backup_stream"),
-            "artist": "",
-            "title": "Backup Stream",
-            "duration": 60 * 60 * 24,
-            "created": "",
-        }
-        musiq_state["paused"] = False
 
     state["musiq"] = musiq_state
     return state

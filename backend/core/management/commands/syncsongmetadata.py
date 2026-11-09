@@ -1,4 +1,5 @@
 """This module contains the syncsongmetadata command."""
+
 from django.core.management.base import BaseCommand
 
 from core.musiq import song_utils

@@ -1,40 +1,42 @@
-FROM raveberry/raveberry-dependencies
+FROM debian:trixie
+
+RUN apt-get update &&\
+	apt-get install -y python3-venv inetutils-ping ffmpeg libpq-dev &&\
+    apt-get clean &&\
+    rm -rf /var/lib/apt/lists/*
+
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH" DOCKER="1"
+
+RUN pip install --no-cache-dir -U pip
 
 WORKDIR /opt/raveberry
 
-RUN pip install -U -r /youtube.txt -r /spotify.txt -r /soundcloud.txt &&\
-	rm -rf ~/.cache/pip &&\
-	mkdir logs
+COPY backend/requirements/common.txt backend/requirements/youtube.txt backend/requirements/spotify.txt backend/requirements/prod.txt backend/requirements/docker.txt /opt/raveberry/requirements/
+
+RUN pip install --no-cache-dir -U -r requirements/docker.txt -r requirements/spotify.txt -r requirements/spotify.txt
+RUN mkdir logs
 
 # copying multiple directories in one layer is not easily doable
 COPY backend/core /opt/raveberry/core
 COPY backend/config /opt/raveberry/config
 COPY backend/main /opt/raveberry/main
+COPY backend/scripts /opt/raveberry/scripts
 COPY backend/templates /opt/raveberry/templates
-COPY backend/resources /opt/raveberry/resources
 COPY AUTHORS LICENSE backend/manage.py backend/VERSION /opt/raveberry/
 COPY docker/entrypoint.sh /entrypoint.sh
 
 COPY docker/pulse-client.conf /etc/pulse/client.conf
-COPY docker/cava_wrapper /cava_wrapper
 
 # create a user with the UID 1000, so it can access the host's pulse server
 # this user needs write access on its config, so add it to the www-data group
-# in order to transparently run cava as this new user,
-# wrap cava in a script that calls sudo as the new user
-# add the corresponding sudoers entry so no password is asked
 RUN mkdir -p /Music/raveberry &&\
 	chown -R www-data:www-data /opt/raveberry /Music/raveberry &&\
-	sed -i -r -e "s|(^source = .*)|#\1|" /opt/raveberry/config/cava.config &&\
-	useradd -mu 1000 -g 33 pulse_user &&\
-    echo "www-data ALL=(pulse_user) NOPASSWD:/usr/bin/orig_cava" >> /etc/sudoers &&\
-	mv /usr/bin/cava /usr/bin/orig_cava &&\
-	mv /cava_wrapper /usr/bin/cava &&\
-	chmod +x /usr/bin/cava
+	useradd -mu 1000 -g 33 pulse_user
 
 EXPOSE 9000
 
 USER www-data
 
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["/usr/local/bin/daphne", "--bind", "0.0.0.0", "--port", "9000", "main.asgi:application"]
+CMD ["daphne", "--bind", "0.0.0.0", "--port", "9000", "main.asgi:application"]

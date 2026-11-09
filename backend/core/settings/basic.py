@@ -207,37 +207,3 @@ def set_people_to_party(request: WSGIRequest) -> HttpResponse:
     value, response = extract_value(request.POST)
     storage.put("people_to_party", int(value))
     return response
-
-
-@control
-def set_alarm_probability(request: WSGIRequest) -> HttpResponse:
-    """Sets the probability with which an alarm is triggered after each song."""
-    value, response = extract_value(request.POST)
-    storage.put("alarm_probability", float(value))
-    return response
-
-
-@control
-def set_buzzer_cooldown(request: WSGIRequest) -> HttpResponse:
-    """Sets the minimum time that needs to pass between buzzer presses."""
-    value, response = extract_value(request.POST)
-    storage.put("buzzer_cooldown", float(value))
-    return response
-
-
-@control
-def set_buzzer_success_probability(request: WSGIRequest) -> HttpResponse:
-    """Sets the probability for the buzzer to play a success sound."""
-    value, response = extract_value(request.POST)
-    storage.put("buzzer_success_probability", float(value))
-    return response
-
-
-@control
-def trigger_alarm(_request: WSGIRequest) -> None:
-    """Manually triggers an alarm."""
-    if playback.trigger_alarm():
-        # because a state update is sent after every control (including this one)
-        # a state update with alarm not being set would be sent
-        # prevent this by manually setting this redis variable prematurely
-        redis.put("alarm_playing", True)

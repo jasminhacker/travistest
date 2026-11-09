@@ -41,27 +41,6 @@ function updateState(state) {
     }
   }
 
-  $.each(state.settings.bluetoothDevices, function(index: number, device) {
-    if (device.address ==$('.bluetooth-device').eq(index)
-        .children().last().attr('id')) {
-      return true;
-    }
-    const li = $('<li/>')
-        .addClass('list-group-item')
-        .addClass('list-item')
-        .addClass('bluetooth-device');
-    $('<label/>')
-        .attr('for', 'bluetooth-device-' + index)
-        .text(device.name)
-        .appendTo(li);
-    $('<input/>')
-        .attr('type', 'radio')
-        .attr('name', 'bluetooth-device')
-        .attr('id', device.address)
-        .appendTo(li);
-    li.insertBefore($('#connect-bluetooth').parent());
-  });
-
   // this field is not included in the generic values,
   // because the error is stored in the base state
   // and the settings state is not updated when the error changes
@@ -69,22 +48,6 @@ function updateState(state) {
     $('#player-status').text('error');
   } else {
     $('#player-status').text('seems fine');
-  }
-
-  if (!state.settings.systemInstall) {
-    $('.install-only').addClass('is-disabled');
-    $('.install-only').attr('disabled-note',
-        'This feature is only available in a system install.');
-  } else {
-    for (const module of
-      ['hotspot', 'remote', 'youtube', 'spotify', 'soundcloud', 'jamendo']) {
-      if (!state.settings[module + 'Configured']) {
-        $('.' + module + '-functionality').addClass('is-disabled');
-        $('.' + module + '-functionality').attr('disabled-note',
-            'Please configure ' + module +
-            ' during installation to use this feature.');
-      }
-    }
   }
 
   if (localStorageGet('ignore-updates') === null) {
@@ -173,13 +136,11 @@ export function onReady() {
         {value: (<HTMLInputElement> this).value});
   });
 
-  registerPostOnClick('trigger-alarm');
-
   registerPostOnClick('check-internet');
   registerPostOnClick('update-user-count');
 
   function update_authorize_url() {
-    const client_id = $('#spotify-device-client-id').val();
+    const client_id = $('#spotify-client-id').val();
     const redirect_uri = $('#spotify-redirect-uri').val();
 
     if (!client_id || !redirect_uri) {
@@ -218,27 +179,12 @@ export function onReady() {
   $('#spotify-redirect-uri').on("change", update_authorize_url);
   update_authorize_url();
 
-  registerPostOnClick('set-spotify-device-credentials', () => {
+  registerPostOnClick('set-spotify-credentials', () => {
     return {
-      client_id: $('#spotify-device-client-id').val(),
-      client_secret: $('#spotify-device-client-secret').val(),
+      client_id: $('#spotify-client-id').val(),
+      client_secret: $('#spotify-client-secret').val(),
       redirect_uri: $('#spotify-redirect-uri').val(),
       authorized_url: $('#spotify-authorized-url').val(),
-    };
-  });
-
-  registerPostOnClick('set-spotify-mopidy-credentials', () => {
-    return {
-      username: $('#spotify-username').val(),
-      password: $('#spotify-password').val(),
-      client_id: $('#spotify-mopidy-client-id').val(),
-      client_secret: $('#spotify-mopidy-client-secret').val(),
-    };
-  });
-
-  registerPostOnClick('set-soundcloud-credentials', () => {
-    return {
-      auth_token: $('#soundcloud-auth-token').val(),
     };
   });
 
@@ -247,21 +193,6 @@ export function onReady() {
       client_id: $('#jamendo-client-id').val(),
     };
   });
-
-  // Remove old devices when restarting scanning. Don't use registerPostOnClick,
-  // as the generic approach already assigns post functionality to this element.
-  $('#bluetooth-scanning').on('click tap', () => {
-    const checked = $('#bluetooth-scanning').is(':checked');
-    if (checked) {
-      $('.bluetooth-device').remove();
-    }
-  });
-
-  registerPostOnClick('connect-bluetooth', () => {
-    return {address: $('input[name=bluetooth-device]:checked').attr('id')};
-  });
-
-  registerPostOnClick('disconnect-bluetooth');
 
   $('#output').on('focus', function() {
     $.get(urls['settings']['list-outputs']).done(function(devices) {
@@ -278,38 +209,6 @@ export function onReady() {
 
   registerPostOnClick('delete-current-song');
   registerPostOnClick('restart-player');
-
-  $('#wifi-ssid').focus(function() {
-    $.get(urls['settings']['available-ssids']).done(function(ssids) {
-      const availableSsids = ssids;
-      $('#wifi-ssid').autocomplete({
-        source: availableSsids,
-        minLength: 0,
-      });
-      $('#wifi-ssid').autocomplete('search');
-    });
-  });
-
-  registerPostOnClick('connect-to-wifi', () => {
-    return {
-      ssid: $('#wifi-ssid').val(),
-      password: $('#wifi-password').val(),
-    };
-  }, () => {
-    $('#wifi-ssid').val('');
-    $('#wifi-password').val('');
-  });
-
-  $('#homewifi-ssid').focus(function() {
-    $.get(urls['settings']['stored-ssids']).done(function(ssids) {
-      const storedSsids = ssids;
-      $('#homewifi-ssid').autocomplete({
-        source: storedSsids,
-        minLength: 0,
-      });
-      $('#homewifi-ssid').autocomplete('search');
-    });
-  });
 
   let keepSubdirsOpen = true;
   $('#library-path').autocomplete({
@@ -400,11 +299,6 @@ export function onReady() {
     };
   });
 
-  registerPostOnClick('restart-server');
-  registerPostOnClick('kill-workers');
-  registerPostOnClick('reboot-system');
-  registerPostOnClick('shutdown-system');
-
   $('#get-latest-version').on('click tap', function() {
     $.get(urls['settings']['get-latest-version']).done(function(response) {
       $('#latest-version').text(response);
@@ -429,18 +323,6 @@ export function onReady() {
   });
   $('#changelog-ok').on('click tap', function() {
     $('#changelog-modal').modal('hide');
-  });
-  $('#open-upgrade-dialog').on('click tap', function() {
-    $.get(urls['settings']['get-upgrade-config']).done(function(response) {
-      $('#upgrade-config').text(response);
-    }).fail(function(response) {
-      errorToast(response.responseText);
-    });
-    $('#upgrade-modal').modal('show');
-  });
-  $('#confirm-upgrade').on('click tap', function() {
-    $('#upgrade-modal').modal('hide');
-    post(urls['settings']['upgrade-raveberry']);
   });
 
   const collapseAnimationOptions = {
@@ -470,6 +352,7 @@ export function onReady() {
   });
 
   $('.list-header').on('click tap', function() {
+    console.log("collapse2")
     $(this).siblings('.list-item').animate(collapseAnimationOptions, 'fast');
     $(this).siblings('.list-item').css('display', 'flex');
     $(this).children('.settings-collapser').toggleClass('collapsed');

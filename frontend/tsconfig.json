@@ -1,16 +1,19 @@
 {
 	"compilerOptions": {
+		"rootDir": "./ts",
 		"outDir": "./js",
 		"target": "es6",
-		"moduleResolution": "node",
+		"moduleResolution": "bundler",
 		"allowSyntheticDefaultImports": true,
+		"strict": false,
 		"lib": [
 			"dom",
-			"es7"
+			"es2021"
 		],
 		"paths": {
 			"@src/*": ["./ts/*"]
-		}
+		},
+		"types": ["jquery", "node"]
 	},
 	"include": ["./ts/**/*"]
 }

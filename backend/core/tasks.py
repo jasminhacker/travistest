@@ -1,4 +1,5 @@
 """This module contains the celery app."""
+
 import os
 from threading import Thread
 from typing import Any, Callable

@@ -1,8 +1,10 @@
 """Contains the core app configuration."""
+
 import atexit
 import logging
 import os
 import sys
+import warnings
 
 from django.apps import AppConfig
 
@@ -16,7 +18,7 @@ class CoreConfig(AppConfig):
     name = "core"
 
     def ready(self) -> None:
-        if "celery" in sys.argv and strtobool(os.environ.get("RUN_MAIN", "0")):
+        if "startcelery" in sys.argv and strtobool(os.environ.get("RUN_MAIN", "0")):
             # if the development celery process starts,
             # have it import all modules containing celery tasks
             # this way, its autoreload is notified on changes in these modules
@@ -46,20 +48,27 @@ class CoreConfig(AppConfig):
             controller.start()
 
         if start_raveberry:
+            # The warning wants to keep us from accessing the database in a not-yet-ready state
+            # Since all other manage.py commands do not use the database and only here the actual
+            # initialization takes place, we can silence the warning for this path
+            warnings.filterwarnings(
+                "ignore",
+                message=r"Accessing the database during app initialization is discouraged\.",
+                category=RuntimeWarning,
+            )
+
             from core import tasks
             from core import redis
             from core.musiq import musiq
             from core.musiq import playback
             from core.settings import basic
             from core.settings import platforms
-            from core.lights import worker
 
             logging.info("starting raveberry")
 
             redis.start()
             tasks.start()
 
-            worker.start()
             # platforms needs to start before musiq because mopidy_available is checked there
             platforms.start()
             musiq.start()
@@ -69,11 +78,5 @@ class CoreConfig(AppConfig):
                 # wake up the playback thread and stop it
                 redis.put("stop_playback_loop", True)
                 playback.queue_changed.set()
-
-                # wake the buzzer thread so it exits
-                playback.buzzer_stopped.set()
-
-                # wake up the listener thread with an instruction to stop the lights worker
-                redis.connection.publish("lights_settings_changed", "stop")
 
             atexit.register(stop_workers)

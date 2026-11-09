@@ -1,4 +1,5 @@
 """This module manages and counts user accesses and handles permissions."""
+
 import re
 from ast import literal_eval
 import colorsys
@@ -17,7 +18,6 @@ from django.utils import timezone
 from core import redis
 
 # kick users after some time without any request
-from core.lights import leds
 from core.settings import storage
 from core.settings.storage import Privileges
 from core.util import extract_value
@@ -202,7 +202,7 @@ def set_user_color(request: WSGIRequest) -> HttpResponse:
 
 
 def tracked(
-    func: Callable[[WSGIRequest], HttpResponse]
+    func: Callable[[WSGIRequest], HttpResponse],
 ) -> Callable[[WSGIRequest], HttpResponse]:
     """A decorator that stores the last access for every connected ip
     so the number of active users can be determined."""
@@ -226,18 +226,7 @@ def tracked(
         last_requests[request_ip] = time.time()
         redis.put("last_requests", last_requests)
 
-        def check():
-            active = redis.get("active_requests")
-            if active > 0:
-                leds.enable_act_led()
-            else:
-                leds.disable_act_led()
-
-        redis.connection.incr("active_requests")
-        check()
         response = func(request)
-        redis.connection.decr("active_requests")
-        check()
 
         return response
 

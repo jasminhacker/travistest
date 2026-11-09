@@ -7,6 +7,7 @@ from django.conf import settings
 from django.urls import reverse
 from unittest import skip, skipIf
 
+from core.musiq import mopidy_player
 from core.musiq.youtube import Youtube
 from core.settings import storage
 from tests.music_test import MusicTest
@@ -57,6 +58,10 @@ class YoutubeTests(MusicTest):
         #        member_path = os.path.join(settings.SONGS_CACHE_DIR, member)
         #        if os.path.isfile(member_path):
         #            os.remove(member_path)
+
+        # mute player for testing
+        self.player = mopidy_player.PLAYER
+        self.player.mixer.set_volume(0)
 
     def _poll_musiq_state(
         self, break_condition: Callable[[dict], bool], timeout: float = 1

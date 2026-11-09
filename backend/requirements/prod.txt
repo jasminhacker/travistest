@@ -1,3 +1,2 @@
--r common.txt
-psycopg>=3.2.0
-hiredis>=2.0.0
+psycopg>=3.3.6
+hiredis>=3.5.0

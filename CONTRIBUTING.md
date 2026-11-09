@@ -1,33 +1,13 @@
 # Quick start for contributors
 
-This file is meant for new contributors to get a fast start as a dev in this project.
-
 ## Dependencies for development
 
 Install dependencies for raveberry (if not already installed for running raveberry before)
 ```
-wget -q -O - https://apt.mopidy.com/mopidy.gpg | sudo apt-key add -
-sudo wget -q -O /etc/apt/sources.list.d/mopidy.list https://apt.mopidy.com/buster.list
-sudo apt-get update
-sudo apt-get install -y python3-pip ffmpeg mopidy redis-server libspotify-dev libglib2.0-dev libgirepository1.0-dev libcairo2-dev gstreamer1.0-plugins-bad
+sudo apt install -y python3-pip ffmpeg gstreamer1.0-plugins-bad inetutils-ping mopidy postgresql redis-server
 ```
 
-Extra dependencies for development
-```
-wget -q -O - https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
-sudo echo "deb https://dl.yarnpkg.com/debian/ stable main" > sudo /etc/apt/sources.list.d/yarn.list
-sudo apt-get update
-sudo apt-get install -y git python3-venv yarn
-```
-
-On a Raspberry Pi 4 with Buster light a wrong yarn version could be installed. To fix this problem, use
-```
-sudo apt remove yarn
-curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-sudo apt-get update  
-sudo apt-get install yarn
-```
+Install [yarn](https://classic.yarnpkg.com/lang/en/docs/install/).
 
 ## Setup Github
 
@@ -74,8 +54,6 @@ Use new virtual Enviroment (required each time you start a bash session)
 Install dev dependencies
 ```
 cd raveberry/
-pip3 install wheel
-pip3 install -r backend/requirements/common.txt
 pip3 install -r backend/requirements/dev.txt
 ```
 
@@ -85,6 +63,24 @@ bin/raveberry run
 ```
 
 Fix the issue / add the feature described in your branch
+
+## Build frontend
+
+```
+cd frontend
+yarn install
+yarn build
+```
+
+You can also use the `yarn js` and `yarn css` commands to only build the javascript or css files. Use `yarn watch-js` and `yarn watch-css` to automatically rebuild on file changes.
+
+## Build docker containers
+
+Make sure docker in installed. From the root Raveberry directory, run:
+```
+docker/build.sh
+```
+
 
 ## Push & PR
 
@@ -120,4 +116,15 @@ pylint --disable=missing-module-docstring,missing-class-docstring,missing-functi
 ## the .pylintrc only works with files in backend/, change directory to lint the binary
 cd bin
 pylint raveberry
+```
+Run Tests
+```
+# run raveberry once with postgres to initialize the database
+bin/raveberry run --postgres --seed-only
+# allow raveberry user to create databases
+sudo -u postgres psql -c "ALTER ROLE raveberry CREATEDB;"
+# run tests
+mopidy
+# in a different shell
+python3 backend/manage.py test
 ```

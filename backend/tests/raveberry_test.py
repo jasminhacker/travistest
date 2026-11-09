@@ -61,8 +61,3 @@ class RaveberryTest(TransactionTestCase):
         self, break_condition: Callable[[dict], bool], timeout: float = 1
     ) -> dict:
         return self._poll_state("musiq-state", break_condition, timeout=timeout)
-
-    def _poll_lights_state(
-        self, break_condition: Callable[[dict], bool], timeout: float = 1
-    ) -> dict:
-        return self._poll_state("lights-state", break_condition, timeout=timeout)

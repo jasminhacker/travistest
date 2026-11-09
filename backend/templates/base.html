@@ -107,29 +107,14 @@
 							<span>Votes</span>
 						</div>
 						{% endif %}
-					</div>
-				</div>
-				<div class="menu-row"{%if not controls_enabled%} style='display: none;'{%endif%}>
-					<div class="with-description">
-						<a href="{% url 'settings' %}"{%if not is_admin%} style='visibility: hidden;'{%endif%}>
-							<i class="fas fa-sliders-h"></i>
-						</a>
-						<span>Settings</span>
-					</div>
-					<div class="with-description">
-						<div id="lights-controls">
-							<i class="fas fa-lightbulb icon-disabled" id="lights-indicator"></i>
-							<a href="{% url 'lights' %}">
-								<i class="fas fa-cog"></i>
+						{% if controls_enabled %}
+						<div class="with-description">
+							<a href="{% url 'settings' %}"{%if not is_admin%} style='visibility: hidden;'{%endif%}>
+								<i class="fas fa-sliders-h"></i>
 							</a>
+							<span>Settings</span>
 						</div>
-						<span>Lights</span>
-					</div>
-					<div class="with-description">
-						<a href="{% url 'network-info' %}">
-							<i class="fas fa-qrcode"></i>
-						</a>
-						<span>Quick Access</span>
+						{% endif %}
 					</div>
 				</div>
 				<div class="menu-row">
@@ -152,7 +137,6 @@
 							{%if local_enabled%}<i id="local" class="fas fa-hdd icon-disabled"></i>{%endif%}
 							{%if youtube_enabled%}<i id="youtube" class="fab fa-youtube icon-disabled"></i>{%endif%}
 							{%if spotify_enabled%}<i id="spotify" class="fab fa-spotify icon-disabled"></i>{%endif%}
-							{%if soundcloud_enabled%}<i id="soundcloud" class="fab fa-soundcloud icon-disabled"></i>{%endif%}
 							{%if jamendo_enabled%}<i id="jamendo" class="fab fa-jamendo icon-disabled"></i>{%endif%}
 						</div>
 						<span>Preferred</span>

@@ -1,4 +1,5 @@
 """This module provides app wide utility functions."""
+
 import subprocess
 from contextlib import contextmanager
 from typing import List, Tuple, ContextManager, Generator
@@ -44,7 +45,8 @@ def camelize(snake_dict: dict) -> dict:
 
 def extract_value(request: QueryDict) -> Tuple[str, HttpResponse]:
     """Return the "value" from the given QueryDict,
-    and an HttpResponse if value is not None, or HttpResponseBadRequest if it is None."""
+    and an HttpResponse if value is not None, or HttpResponseBadRequest if it is None.
+    """
     value = request.get("value")
     if value is None:
         return "", HttpResponseBadRequest("value must be specified")
@@ -64,45 +66,6 @@ def get_devices() -> List[str]:
     if not devices:
         raise ValueError("no devices found")
     return devices
-
-
-def ip_of_device(device: str) -> str:
-    """Returns the IP that the system has on the given network device."""
-    output = subprocess.check_output(
-        f"ip -4 a show dev {device}".split(), universal_newlines=True
-    )
-    ip = None
-    for line in output.split("\n"):
-        line = line.strip()
-        if not line.startswith("inet"):
-            continue
-        ip = line.split()[1].split("/")[0]
-        break
-    if not ip:
-        raise ValueError(f"ip not found for {device}")
-    return ip
-
-
-def broadcast_of_device(device: str) -> str:
-    """Returns the broadcast address of the given network device."""
-    output = subprocess.check_output(
-        f"ip -o -f inet addr show {device}".split(), universal_newlines=True
-    )
-    words = output.split()
-    return words[5]
-
-
-def service_installed(service: str) -> bool:
-    """Returns whether the given systemd service is installed."""
-    if not service.endswith(".service"):
-        service += ".service"
-    try:
-        out = subprocess.check_output(
-            ["systemctl", "list-unit-files", service], text=True
-        )
-    except subprocess.CalledProcessError:
-        return False
-    return len(out.splitlines()) > 3
 
 
 def csrf_failure(  # pylint: disable=unused-argument

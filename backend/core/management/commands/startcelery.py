@@ -1,5 +1,6 @@
 """This module deals with the "startcelery" command.
 It starts the celery worker and restarts them on file changes."""
+
 import subprocess
 
 from django.core.management.base import BaseCommand
@@ -12,7 +13,7 @@ def restart_celery() -> None:
 
     # https://docs.celeryproject.org/en/stable/userguide/tasks.html
     # use -O fair to be friendly to long-running tasks
-    subprocess.call("celery -A core.tasks worker -O fair -l INFO".split())
+    subprocess.call("celery -A core.tasks worker -O fair -c 6".split())
 
 
 class Command(BaseCommand):

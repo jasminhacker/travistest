@@ -55,15 +55,6 @@ class SpotifyPlayer(player.Player):
         ):
             raise PlaybackError("Spotify API error")
 
-    def play_alarm(self, interrupt: bool, alarm_path: str) -> None:
-        # since the sounds can not be played on Spotify, we only pause here to have
-        # some time so they can be played some other way
-        pause()
-
-    def play_backup_stream(self):
-        # Spotify can't play arbitrary internet streams
-        pass
-
 
 def restart() -> None:
     with spotify_api():
@@ -90,6 +81,8 @@ def pause() -> None:
 
 def seek_forward(seek_distance: float) -> None:
     with spotify_api():
+        # currently does not work because Spotify regularly returns None for progress_ms
+        # could be fixed by keeping track of song progress on Raveberry side
         current_position = Spotify.api.current_playback()["progress_ms"]
         if current_position:
             Spotify.api.seek_track(current_position + seek_distance * 1000)

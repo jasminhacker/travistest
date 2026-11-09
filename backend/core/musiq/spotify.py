@@ -13,7 +13,6 @@ from spotipy import SpotifyOAuth, SpotifyStateError
 from core.musiq import song_utils
 from core.musiq.playlist_provider import PlaylistProvider
 from core.musiq.song_provider import SongProvider
-from core.musiq.spotify_web import OAuthClient
 from core.settings import storage
 from core import redis
 
@@ -47,13 +46,12 @@ class DatabaseCacheHandler(spotipy.CacheHandler):
 class Spotify:
     """This class contains code for both the song and playlist provider"""
 
-    _device_api = None  # type: ignore[assignment]
-    _mopidy_api = None  # type: ignore[assignment]
+    _api = None  # type: ignore[assignment]
 
     @staticmethod
-    def device_api():
-        client_id = storage.get(key="spotify_device_client_id")
-        client_secret = storage.get(key="spotify_device_client_secret")
+    def create_api():
+        client_id = storage.get(key="spotify_client_id")
+        client_secret = storage.get(key="spotify_client_secret")
         redirect_uri = storage.get(key="spotify_redirect_uri")
         scope = "user-read-playback-state user-modify-playback-state playlist-read-private playlist-read-collaborative user-library-read"
 
@@ -63,44 +61,22 @@ class Spotify:
             redirect_uri=redirect_uri,
             scope=scope,
             cache_handler=DatabaseCacheHandler(),
+            open_browser=False,
         )
         auth_manager._get_auth_response_interactive = (
             _get_auth_response_storage.__get__(auth_manager)
         )
 
-        return spotipy.Spotify(auth_manager=auth_manager)
-
-    @staticmethod
-    def mopidy_api():
-        client_id = storage.get(key="spotify_mopidy_client_id")
-        client_secret = storage.get(key="spotify_mopidy_client_secret")
-        return OAuthClient(
-            base_url="https://api.spotify.com/v1",
-            refresh_url="https://auth.mopidy.com/spotify/token",
-            client_id=client_id,
-            client_secret=client_secret,
-        )
-
-    @staticmethod
-    def create_device_api():
-        Spotify._device_api = Spotify.device_api()
-
-    @staticmethod
-    def create_mopidy_api():
-        Spotify._mopidy_api = Spotify.mopidy_api()
+        Spotify._api = spotipy.Spotify(auth_manager=auth_manager)
+        return Spotify._api
 
     @staticproperty
     def api(cls):
         """Returns the spotify client if it was already created.
         If not, it is created using the spotify credentials from the database."""
-        if redis.get("active_player") == "spotify":
-            if cls._device_api is None:
-                cls.create_device_api()
-            return cls._device_api
-        elif redis.get("active_player") == "mopidy":
-            if cls._mopidy_api is None:
-                cls.create_mopidy_api()
-            return cls._mopidy_api
+        if cls._api is None:
+            cls.create_api()
+        return cls._api
 
     def get_search_suggestions(
         self, query: str, playlist: bool
@@ -160,7 +136,7 @@ class SpotifySongProvider(SongProvider, Spotify):
     def check_available(self) -> bool:
         if not self.gather_metadata():
             return False
-        # the default bitrate of mopidy-spotify is 160kbps
+        # the default "High" bitrate is 160kbps
         # estimate the size of a song by multiplying with its duration
         size = self.metadata["duration"] * 160 / 8 * 1000
         return self.check_not_too_large(size)
@@ -286,9 +262,9 @@ class SpotifyPlaylistProvider(PlaylistProvider, Spotify):
             if self._spotify_type == "playlist":
                 result = self.api.playlist(self.id, fields="name")
             elif self._spotify_type == "artist":
-                result = self.api.artist(self.id, fields="name")
+                result = self.api.artist(self.id)
             elif self._spotify_type == "album":
-                result = self.api.album(self.id, fields="name")
+                result = self.api.album(self.id)
             else:
                 assert False
             self.title = result["name"]
@@ -318,7 +294,6 @@ class SpotifyPlaylistProvider(PlaylistProvider, Spotify):
         elif self._spotify_type == "album":
             result = self.api.album_tracks(
                 self.id,
-                fields="items(external_urls(spotify))",
                 limit=storage.get("max_playlist_items"),
             )
             tracks = result["items"]

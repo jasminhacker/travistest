@@ -91,7 +91,7 @@ class Jamendo:
 
 
 class JamendoSongProvider(SongProvider, Jamendo):
-    """This class handles songs from Soundcloud."""
+    """This class handles songs from Jamendo."""
 
     @staticmethod
     def get_id_from_external_url(url: str) -> str:

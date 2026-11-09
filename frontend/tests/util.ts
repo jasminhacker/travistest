@@ -4,7 +4,7 @@ import * as fs from 'fs';
 export function renderTemplate(template, options?) {
   options = JSON.stringify(options) || '';
   let env = process.env;
-  env["DJANGO_DEBUG"] = "1";
+  env["SQLITE"] = "1";
   const p = child.spawnSync('python3', ['../backend/manage.py', 'rendertemplate', template, 'head.html', 'body.html', options], {
     env: env,
   });

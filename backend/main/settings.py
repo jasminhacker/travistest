@@ -1,4 +1,5 @@
 """This module configures django."""
+
 import logging.config
 import os
 import pathlib
@@ -6,7 +7,6 @@ import subprocess
 import sys
 from typing import List
 
-import yaml
 from django.core.management.utils import get_random_secret_key
 
 from core.util import strtobool
@@ -33,6 +33,7 @@ except FileNotFoundError:
     VERSION = "undefined"
 
 DEBUG = strtobool(os.environ.get("DJANGO_DEBUG", "0"))
+SQLITE = strtobool(os.environ.get("SQLITE", "0"))
 TESTING = "test" in sys.argv
 
 DOCKER = strtobool(os.environ.get("DOCKER", "0"))
@@ -43,6 +44,7 @@ ALLOWED_HOSTS = ["*"]
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
     "core.apps.CoreConfig",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -50,9 +52,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "channels",
 ]
-if not DEBUG:
+if not SQLITE:
     INSTALLED_APPS.append("django.contrib.postgres")
 
 MIDDLEWARE = [
@@ -84,19 +85,14 @@ TEMPLATES = [
 ]
 
 CSRF_FAILURE_VIEW = "core.util.csrf_failure"
-with open(os.path.join(BASE_DIR, "config/raveberry.yaml"), encoding="utf-8") as f:
-    config = yaml.safe_load(f)
+# CSRF_TRUSTED_ORIGINS = [remote_url]
 try:
     # Since django 4.0 not only the Referer is checked for csrf protection, but also HTTP_ORIGIN
     # This leads to csrf failures if there is a protocol mismatch
     # e.g. http://demo.raveberry.party vs https://demo.raveberry.party
     # this happens when django is proxied behind a server that does the ssl-handling
     # list the provided remote url as a trusted origin
-    remote_url = config["remote_url"]
-    # override from environment variable, if present
-    env_remote_url = os.environ.get("REMOTE_URL", None)
-    if env_remote_url:
-        remote_url = env_remote_url
+    remote_url = os.environ.get("REMOTE_URL", None)
     if remote_url is not None:
         if not remote_url.startswith("https://") and not remote_url.startswith(
             "http://"
@@ -116,8 +112,6 @@ if DOCKER:
     REDIS_PORT = "6379"
     MOPIDY_HOST = "mopidy"
     MOPIDY_PORT = "6680"
-    ICECAST_HOST = "icecast"
-    ICECAST_PORT = "8000"
     DEFAULT_CACHE_DIR = "/Music/raveberry/"
     TEST_CACHE_DIR = DEFAULT_CACHE_DIR
 else:
@@ -127,8 +121,6 @@ else:
     REDIS_PORT = "6379"
     MOPIDY_HOST = "localhost"
     MOPIDY_PORT = "6680"
-    ICECAST_HOST = "localhost"
-    ICECAST_PORT = "8000"
     DEFAULT_CACHE_DIR = "~/Music/raveberry/"
     TEST_CACHE_DIR = os.path.join(BASE_DIR, "test_cache/")
 
@@ -139,11 +131,9 @@ REDIS_HOST = os.environ.get("REDIS_HOST", "") or REDIS_HOST
 REDIS_PORT = os.environ.get("REDIS_PORT", "") or REDIS_PORT
 MOPIDY_HOST = os.environ.get("MOPIDY_HOST", "") or MOPIDY_HOST
 MOPIDY_PORT = os.environ.get("MOPIDY_PORT", "") or MOPIDY_PORT
-ICECAST_HOST = os.environ.get("ICECAST_HOST", "") or ICECAST_HOST
-ICECAST_PORT = os.environ.get("ICECAST_PORT", "") or ICECAST_PORT
 
 # Database
-if DEBUG:
+if SQLITE:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
@@ -165,7 +155,6 @@ else:
 
 BROKER_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}"
 CELERY_IMPORTS = [
-    "core.lights.worker",
     "core.musiq.playback",
     "core.musiq.music_provider",
     "core.settings.library",
@@ -236,7 +225,17 @@ ASGI_APPLICATION = "main.routing.APPLICATION"
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {"hosts": [(REDIS_HOST, REDIS_PORT)], "capacity": 1500, "expiry": 10},
+        "CONFIG": {
+            # https://github.com/django/channels_redis/issues/422
+            "hosts": [
+                {
+                    "address": f"redis://{REDIS_HOST}:{REDIS_PORT}/0",
+                    "socket_timeout": None,
+                }
+            ],
+            "capacity": 1500,
+            "expiry": 10,
+        },
     }
 }
 
@@ -286,11 +285,15 @@ LOGGING = {
         },
     },
     "root": {
-        "handlers": ["infofile", "errorfile", "console"]
-        if DEBUG or TESTING
-        else ["infofile", "errorfile", "docker"]
-        if DOCKER
-        else ["infofile", "errorfile"],
+        "handlers": (
+            ["infofile", "errorfile", "console"]
+            if SQLITE or TESTING
+            else (
+                ["infofile", "errorfile", "docker"]
+                if DOCKER
+                else ["infofile", "errorfile"]  # production
+            )
+        ),
         "level": "DEBUG",
     },
 }
@@ -316,14 +319,13 @@ if SONGS_CACHE_DIR == "":
 
 # sound
 PULSE_SERVER = "127.0.0.1"
-if DEBUG:
-    try:
-        output = subprocess.check_output(
-            "pactl info".split(), text=True, stderr=subprocess.DEVNULL
-        )
-        PULSE_SERVER = output.splitlines()[0].split(":")[1].strip()
-    except (FileNotFoundError, subprocess.CalledProcessError, IndexError):
-        pass
+try:
+    output = subprocess.check_output(
+        "pactl info".split(), text=True, stderr=subprocess.DEVNULL
+    )
+    PULSE_SERVER = output.splitlines()[0].split(":")[1].strip()
+except (FileNotFoundError, subprocess.CalledProcessError, IndexError):
+    pass
 
 # use a different cache directory for testing
 if TESTING:

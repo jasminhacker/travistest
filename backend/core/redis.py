@@ -1,4 +1,5 @@
 """This module provides functionality to interface with Redis."""
+
 from ast import literal_eval
 from typing import Any, Dict, List, Optional, Tuple, Union, Literal
 
@@ -9,10 +10,6 @@ from core.util import strtobool
 
 # locks:
 # mopidy_lock:  controlling mopidy api accesses
-# lights_lock:  ensures lights settings are not changed during device updates
-
-# channels
-# lights_settings_changed
 
 DeviceInitialized = Literal
 
@@ -25,34 +22,14 @@ defaults = {
     "paused": False,
     "playback_error": False,
     "stop_playback_loop": False,
-    "alarm_playing": False,
-    "alarm_requested": False,
-    "alarm_duration": 10.0,
-    "last_buzzer": 0.0,
-    "backup_playing": False,
-    # lights
-    "lights_active": False,
-    "ring_initialized": False,
-    "wled_initialized": False,
-    "strip_initialized": False,
-    "screen_initialized": False,
-    "led_programs": [],
-    "screen_programs": [],
-    "resolutions": [],
-    "current_resolution": (0, 0),
-    "current_fps": 0.0,
     # settings
     "has_internet": False,
     "mopidy_available": False,
     "youtube_available": False,
     "spotify_available": False,
-    "soundcloud_available": False,
     "jamendo_available": False,
     "library_scan_progress": "0 / 0 / 0",
-    "bluetoothctl_active": False,
-    "bluetooth_devices": [],
     # user manager
-    "active_requests": 0,
     "last_user_count_update": 0.0,
     "last_requests": {},
 }

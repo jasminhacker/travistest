@@ -1,4 +1,5 @@
 """This module contains the rendertemplate command."""
+
 import json
 
 from bs4 import BeautifulSoup

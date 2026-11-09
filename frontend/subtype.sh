@@ -13,7 +13,7 @@ fi
 # then we look up their glyph code in fontawesome's css file
 ids=$(grep -rohE 'fa-[[:alnum:]-]+' ../backend/templates/ ts/ | sort -u | \
 	while read id; do \
-		grep -A 1 "$id" "$cssfile" | grep -o '"\\.*"' | sed 's/"\\\(.*\)"/\1/'; \
+		grep -A 1 -- "$id" "$cssfile" | grep -oE '\\[[:xdigit:]]{1,6}' | sed 's/^\\//'
 	done | \
 	tr '\n' ',')
 

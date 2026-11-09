@@ -5,12 +5,6 @@ class FakePlayer(player.Player):
     def start_song(self, song, catch_up: float):
         pass
 
-    def play_alarm(self, interrupt: bool, alarm_path: str) -> None:
-        pass
-
-    def play_backup_stream(self):
-        pass
-
 
 def restart() -> None:
     pass

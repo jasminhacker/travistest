@@ -7,7 +7,7 @@ import * as child from 'child_process';
 declare const global: any;
 
 // add jQuery to the global scope so libraries depending on it can be loaded
-import * as $ from 'jquery';
+import $ from "jquery";
 global['$'] = global['jQuery'] = $;
 
 global['CSRF_TOKEN'] = '';
@@ -28,7 +28,6 @@ global['ADDITIONAL_KEYWORDS'] = '';
 global['FORBIDDEN_KEYWORDS'] = '';
 global['YOUTUBE_SUGGESTIONS'] = 0;
 global['SPOTIFY_SUGGESTIONS'] = 0;
-global['SOUNDCLOUD_SUGGESTIONS'] = 0;
 global['JAMENDO_SUGGESTIONS'] = 0;
 
 

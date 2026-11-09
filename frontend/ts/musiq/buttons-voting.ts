@@ -8,12 +8,12 @@ export function onReady() {
   const maxTokens = 10;
   let currentTokens = maxTokens;
   const bucketLifetime = 30000; // half a minute
-  let currentBucket = $.now();
+  let currentBucket = Date.now();
 
   /** Makes sure that voting does not occur too often.
    * @return {boolean} whether voting is allowed. */
   function canVote() {
-    const now = $.now();
+    const now = Date.now();
     const timePassed = now - currentBucket;
     if (timePassed > bucketLifetime) {
       currentBucket = now;

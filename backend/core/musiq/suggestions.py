@@ -112,19 +112,6 @@ def online_suggestions(request: WSGIRequest) -> JsonResponse:
                         }
                     )
 
-        def fetch_soundcloud() -> None:
-            from core.musiq.soundcloud import Soundcloud
-
-            soundcloud_suggestions = Soundcloud().get_search_suggestions(query)
-            soundcloud_suggestions = soundcloud_suggestions[
-                : storage.get("soundcloud_suggestions")
-            ]
-            with results_lock:
-                for suggestion in soundcloud_suggestions:
-                    results.append(
-                        {"key": -1, "value": suggestion, "type": "soundcloud-online"}
-                    )
-
         def fetch_jamendo() -> None:
             from core.musiq.jamendo import Jamendo
 
@@ -141,11 +128,10 @@ def online_suggestions(request: WSGIRequest) -> JsonResponse:
         suggestion_fetchers = {
             "youtube": fetch_youtube,
             "spotify": fetch_spotify,
-            "soundcloud": fetch_soundcloud,
             "jamendo": fetch_jamendo,
         }
 
-        for platform in ["youtube", "spotify", "soundcloud", "jamendo"]:
+        for platform in ["youtube", "spotify", "jamendo"]:
             if (
                 storage.get(cast(PlatformEnabled, f"{platform}_enabled"))
                 and storage.get(cast(PlatformSuggestions, f"{platform}_suggestions"))
@@ -174,7 +160,7 @@ def _offline_playlist_suggestions(query: str) -> List[SuggestionResult]:
     # but massaging both QuerySets into a single Type would require asserts/casts,
     # which have little performance impact but should be avoided in this critical codepath
     playlist_results: Iterable[Mapping[str, Any]]
-    if settings.DEBUG:
+    if settings.SQLITE:
         matching_playlists = remaining_playlists
         for term in terms:
             matching_playlists = matching_playlists.filter(
@@ -221,7 +207,7 @@ def _offline_playlist_suggestions(query: str) -> List[SuggestionResult]:
                 continue
         else:
             # don't suggest songs if the respective platform is disabled
-            assert platform in ["youtube", "spotify", "soundcloud", "jamendo"]
+            assert platform in ["youtube", "spotify", "jamendo"]
             if not storage.get(cast(PlatformEnabled, f"{platform}_enabled")):
                 continue
         results.append(result_dict)
@@ -339,7 +325,7 @@ def _offline_song_suggestions(query: str) -> List[SuggestionResult]:
     results: List[SuggestionResult] = []
     terms = query.split()
     song_results: Iterable[Mapping[str, Any]]
-    if settings.DEBUG:
+    if settings.SQLITE:
         # Testing the whole table whether it contains any term is quite costly.
         # Used for sqlite3 which does not have a similarity function.
         matching_songs = ArchivedSong.objects.prefetch_related("queries")
@@ -399,7 +385,7 @@ def _offline_song_suggestions(query: str) -> List[SuggestionResult]:
                 continue
         else:
             # don't suggest songs if the respective platform is disabled
-            assert platform in ["youtube", "spotify", "soundcloud", "jamendo"]
+            assert platform in ["youtube", "spotify", "jamendo"]
             if not storage.get(cast(PlatformEnabled, f"{platform}_enabled")):
                 continue
         result_dict: SuggestionResult = {

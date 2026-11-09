@@ -1,4 +1,5 @@
 """This module contains the base class of all song providers."""
+
 import datetime
 import logging
 from typing import Optional, Type, List, Dict, Callable, Tuple
@@ -69,10 +70,6 @@ class SongProvider(MusicProvider):
             from core.musiq.spotify import SpotifySongProvider
 
             provider_class = SpotifySongProvider
-        elif storage.get("soundcloud_enabled") and url_type == "soundcloud":
-            from core.musiq.soundcloud import SoundcloudSongProvider
-
-            provider_class = SoundcloudSongProvider
         elif storage.get("jamendo_enabled") and url_type == "jamendo":
             from core.musiq.jamendo import JamendoSongProvider
 
@@ -130,10 +127,6 @@ class SongProvider(MusicProvider):
                 from core.musiq.spotify import SpotifySongProvider
 
                 provider_class = SpotifySongProvider
-            if storage.get("soundcloud_enabled") and url_type == "soundcloud":
-                from core.musiq.soundcloud import SoundcloudSongProvider
-
-                provider_class = SoundcloudSongProvider
             if storage.get("jamendo_enabled") and url_type == "jamendo":
                 from core.musiq.jamendo import JamendoSongProvider
 

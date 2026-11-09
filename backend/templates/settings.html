@@ -80,6 +80,10 @@
 				<i class="fas fa-sync" id="update-user-count"></i>
 			</div>
 		</li>
+		<li class="list-group-item list-item">
+			<span class="description">People to Party</span>
+			<input id="people-to-party"/>
+		</li>
 	</ul>
 
 	<ul class="list-group">
@@ -116,37 +120,11 @@
 			<input id="additional-keywords"/>
 		</li>
 		<li class="list-group-item list-item">
-			<span class="description">Do not enqueue songs containing these words (only Spotify and Soundcloud)</span>
+			<span class="description">Do not enqueue songs containing these words (Spotify only)</span>
 			<input id="forbidden-keywords"/>
 		</li>
 		<li class="list-group-item list-item centered">
 			<button class="btn" id="delete-current-song">Delete Current Song</button>
-		</li>
-	</ul>
-
-	<ul class="list-group">
-		<li class="list-group-item list-header">
-			<i class="fas fa-angle-down settings-collapser collapsed"></i>
-			<span>Party</span>
-		</li>
-		<li class="list-group-item list-item">
-			<span class="description">People to Party</span>
-			<input id="people-to-party"/>
-		</li>
-		<li class="list-group-item list-item">
-			<span class="description">Alarm Probability after each song (from 0 to 1)</span>
-			<input id="alarm-probability"/>
-		</li>
-		<li class="list-group-item list-item">
-			<span class="description">Minimum time between buzzers (in seconds)</span>
-			<input id="buzzer-cooldown"/>
-		</li>
-		<li class="list-group-item list-item">
-			<span class="description">Buzzer success probability. (0 to 1, <0 for default sound)</span>
-			<input id="buzzer-success-probability"/>
-		</li>
-		<li class="list-group-item list-item centered">
-			<button class="btn" id="trigger-alarm">Trigger Alarm</button>
 		</li>
 	</ul>
 
@@ -183,15 +161,12 @@
 			<a href="https://github.com/raveberry/raveberry/blob/master/docs/spotify.md" target="_blank" rel="noopener">Readme</a>
 		</li>
 		<li class="list-group-item list-item">
-			<b>Credentials for device playback</b>
-		</li>
-		<li class="list-group-item list-item">
 			<span class="description">Client ID</span>
-			<input id="spotify-device-client-id"/>
+			<input id="spotify-client-id"/>
 		</li>
 		<li class="list-group-item list-item">
 			<span class="description">Client Secret</span>
-			<input id="spotify-device-client-secret"/>
+			<input id="spotify-client-secret"/>
 		</li>
 		<li class="list-group-item list-item">
 			<span class="description">Redirect Uri</span>
@@ -206,56 +181,7 @@
 			<input id="spotify-authorized-url"/>
 		</li>
 		<li class="list-group-item list-item centered">
-			<button class="btn" id="set-spotify-device-credentials">Set Credentials</button>
-		</li>
-		<li class="list-group-item list-item">
-			<b>Credentials for local playback</b>
-		</li>
-		<li class="list-group-item list-item">
-			<span class="description">Username</span>
-			<input id="spotify-username"/>
-		</li>
-		<li class="list-group-item list-item">
-			<span class="description">Password</span>
-			<input id="spotify-password"/>
-		</li>
-		<li class="list-group-item list-item">
-			<span class="description">Client ID</span>
-			<input id="spotify-mopidy-client-id"/>
-		</li>
-		<li class="list-group-item list-item">
-			<span class="description">Client Secret</span>
-			<input id="spotify-mopidy-client-secret"/>
-		</li>
-		<li class="list-group-item list-item centered">
-			<button class="btn" id="set-spotify-mopidy-credentials">Set Credentials</button>
-		</li>
-	</ul>
-
-	<ul class="list-group soundcloud-functionality">
-		<li class="list-group-item list-header">
-			<i class="fas fa-angle-down settings-collapser collapsed"></i>
-			<span>Soundcloud</span>
-		</li>
-		<li class="list-group-item list-item">
-			<span class="description">Enabled</span>
-			<input type="checkbox" id="soundcloud-enabled">
-		</li>
-		<li class="list-group-item list-item">
-			<span class="description">Number of online suggestions</span>
-			<input id="soundcloud-suggestions"/>
-		</li>
-		<li class="list-group-item list-item">
-			<span class="description">
-				Authentication Token
-				<a href="https://mopidy.com/ext/soundcloud/#authentication" data-toggle="tooltip" target="_blank" rel="noopener" title="Click here to get the credentials">
-					<i class="fas fa-question-circle"></i>
-				</a>
-			</span>
-			<input type="password" id="soundcloud-auth-token"/>
-		</li>
-		<li class="list-group-item list-item centered">
-			<button class="btn" id="set-soundcloud-credentials">Set Credentials</button>
+			<button class="btn" id="set-spotify-credentials">Set Credentials</button>
 		</li>
 	</ul>
 
@@ -289,46 +215,7 @@
 	<ul class="list-group">
 		<li class="list-group-item list-header">
 			<i class="fas fa-angle-down settings-collapser collapsed"></i>
-			<span>Backup Stream</span>
-		</li>
-		<li class="list-group-item list-item">
-			Set an internet stream to be played when no other song is enqueued. Set empty to disable.
-		</li>
-		<li class="list-group-item list-item">
-			<span class="description">Stream URL</span>
-			<input id="backup-stream"/>
-		</li>
-	</ul>
-
-	<ul class="list-group install-only">
-		<li class="list-group-item list-header">
-			<i class="fas fa-angle-down settings-collapser collapsed"></i>
-			<span>Bluetooth</span>
-		</li>
-		<li class="list-group-item list-item">
-			<span class="description">Scanning</span>
-			<input type="checkbox" id="bluetooth-scanning" autocomplete="off"/>
-		</li>
-		<!--
-		<li class="list-group-item list-item">
-			<label for="bluetooth-device-1">Device 1</label>
-			<input type="radio" name="bluetooth-device" id="12:34:56:78:9A:BD"/>
-		</li>
-		-->
-		<li class="list-group-item list-item">
-			<button class="btn" id="disconnect-bluetooth">Disconnect</button>
-			<button class="btn" id="connect-bluetooth">Connect</button>
-		</li>
-	</ul>
-
-	<ul class="list-group">
-		<li class="list-group-item list-header">
-			<i class="fas fa-angle-down settings-collapser collapsed"></i>
 			<span>Sound Output</span>
-		</li>
-		<li class="list-group-item list-item install-only">
-			<span class="description">Duplicate audio into visualization if available</span>
-			<input type="checkbox" id="feed-cava">
 		</li>
 		<li class="list-group-item list-item">
 			<span class="description">Output</span>
@@ -341,39 +228,6 @@
 		<li class="list-group-item list-item">
 			<span class="description">Player status (restarting player/server might fix errors)</span>
 			<span id="player-status"></span>
-		</li>
-		<li class="list-group-item list-item centered install-only">
-			<button class="btn" id="restart-player">Restart Player</button>
-		</li>
-	</ul>
-
-	<ul class="list-group install-only">
-		<li class="list-group-item list-header">
-			<i class="fas fa-angle-down settings-collapser collapsed"></i>
-			<span>Wifi</span>
-		</li>
-		<li class="list-group-item list-item">
-			<span class="description">SSID</span>
-			<input id="wifi-ssid"/>
-		</li>
-		<li class="list-group-item list-item">
-			<span class="description">Password</span>
-			<input type="password" id="wifi-password"/>
-		</li>
-		<li class="list-group-item list-item centered">
-			<button class="btn" id="connect-to-wifi">Connect to Wifi</button>
-		</li>
-		<li class="list-group-item list-item">
-			<span class="description">Home Wifi Enabled:</span>
-			<div id="homewifi-enabled"></div>
-		</li>
-		<li class="list-group-item list-item">
-			<button class="btn" id="disable-homewifi">Disable Home Wifi</button>
-			<button class="btn" id="enable-homewifi">Enable Home Wifi</button>
-		</li>
-		<li class="list-group-item list-item">
-			<span class="description">Home Wifi SSID</span>
-			<input id="homewifi-ssid"/>
 		</li>
 	</ul>
 
@@ -471,72 +325,6 @@
 		</li>
 	</ul>
 
-	<ul class="list-group install-only">
-		<li class="list-group-item list-header">
-			<i class="fas fa-angle-down settings-collapser collapsed"></i>
-			<span>System</span>
-		</li>
-		<li class="list-group-item list-item">
-			<span class="description">Hotspot Enabled (without considering homewifi):</span>
-			<div id="hotspot-enabled"></div>
-		</li>
-		<li class="list-group-item list-item hotspot-functionality">
-			<button class="btn" id="disable-hotspot">Disable Hotspot</button>
-			<button class="btn" id="enable-hotspot">Enable Hotspot</button>
-		</li>
-		<li class="list-group-item list-item">
-			<span class="description">Wifi Protected:</span>
-			<div id="wifi-protection-enabled"></div>
-		</li>
-		<li class="list-group-item list-item hotspot-functionality">
-			<button class="btn" id="disable-wifi-protection">Unprotect Wifi</button>
-			<button class="btn" id="enable-wifi-protection">Protect Wifi</button>
-		</li>
-		<li class="list-group-item list-item">
-			<span class="description">Tunneling Enabled:</span>
-			<div id="tunneling-enabled"></div>
-		</li>
-		<li class="list-group-item list-item hotspot-functionality">
-			<button class="btn" id="disable-tunneling">Disable Tunneling</button>
-			<button class="btn" id="enable-tunneling">Enable Tunneling</button>
-		</li>
-		<li class="list-group-item list-item">
-			<span class="description">Remote Enabled:</span>
-			<div id="remote-enabled"></div>
-		</li>
-		<li class="list-group-item list-item remote-functionality">
-			<button class="btn" id="disable-remote">Disable Remote</button>
-			<button class="btn" id="enable-remote">Enable Remote</button>
-		</li>
-		<li class="list-group-item list-item">
-			<span class="description">Task Strategy:</span>
-			<div id="task-strategy"></div>
-		</li>
-		<li class="list-group-item list-item">
-			Celery is slightly slower during startup and requires more RAM, but faster when running.
-			Choose Threads if you restart your server often or are on a weak system (e.g. Pi Zero).
-			Changing strategy restarts the server.
-		</li>
-		<li class="list-group-item list-item">
-			<button class="btn" id="disable-celery">Use Threads</button>
-			<button class="btn" id="enable-celery">Use Celery</button>
-		</li>
-	</ul>
-	<ul class="list-group install-only">
-		<li class="list-group-item list-header">
-			<i class="fas fa-angle-down settings-collapser collapsed"></i>
-			<span>Power</span>
-		</li>
-		<li class="list-group-item list-item">
-			<button class="btn" id="restart-server">Restart Server</button>
-			<button class="btn" id="kill-workers">Kill Workers</button>
-		</li>
-		<li class="list-group-item list-item">
-			<button class="btn" id="reboot-system">Reboot System</button>
-			<button class="btn" id="shutdown-system">Shutdown System</button>
-		</li>
-	</ul>
-
 	<ul class="list-group">
 		<li class="list-group-item list-header" id="about">
 			<i class="fas fa-angle-down settings-collapser collapsed"></i>
@@ -564,10 +352,6 @@
 			<span class="description">Changelog</span>
 			<button class="btn" id="open-changelog">Show</button>
 		</li>
-		<li class="list-group-item list-item install-only">
-			<span class="description">Upgrade Raveberry</span>
-			<button class="btn" id="open-upgrade-dialog">Upgrade</button>
-		</li>
 	</ul>
 
 	<div id="changelog-modal" class="modal fade" role="dialog">
@@ -581,22 +365,6 @@
 		</div>
 	</div>
 
-	<div id="upgrade-modal" class="modal fade" role="dialog">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div>
-					Are you sure that you want to upgrade? <br/>
-					If this config contains an old database backup, <br/>
-					your data <strong>will be lost</strong>! <br/>
-					(using the config from your install directory)
-				</div>
-				<div id="upgrade-config">
-					Fetching config...
-				</div>
-				<button class="btn" id="confirm-upgrade">Yes, I'm sure</button>
-			</div>
-		</div>
-	</div>
 </div>
 
 {% endblock %}

@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "raveberry"
+dynamic = ["version", "dependencies", "optional-dependencies"]
+authors = [
+	{ name = "Jasmin Hacker", email = "raveberry@jhacker.de" }
+]
+description = "A multi-user music server with a focus on participation"
+readme = "README.md"
+license = "LGPL-3.0-only"
+license-files = ["LICENSE"]
+requires-python = ">=3.12"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Framework :: Django",
+    "Programming Language :: Python :: 3",
+]
+
+[project.urls]
+Repository = "https://github.com/raveberry/raveberry"
+
+[tool.setuptools]
+script-files = ["bin/raveberry"]
+
+[tool.setuptools.dynamic]
+version = { file = ["raveberry/VERSION"] }
+dependencies = { file = ["raveberry/requirements/common.txt"] }
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["raveberry*"]
+
+[tool.setuptools.dynamic.optional-dependencies]
+youtube = { file = ["raveberry/requirements/youtube.txt"] }
+spotify = { file = ["raveberry/requirements/spotify.txt"] }
+prod = { file = ["raveberry/requirements/prod.txt"] }

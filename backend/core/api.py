@@ -1,4 +1,5 @@
 """This module contains all public api endpoints."""
+
 import re
 
 from django.core.handlers.wsgi import WSGIRequest

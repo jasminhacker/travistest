@@ -1,4 +1,5 @@
 """This module analyses provides an analysis of gathered data."""
+
 from __future__ import annotations
 
 import math

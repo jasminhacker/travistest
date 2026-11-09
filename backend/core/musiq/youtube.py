@@ -1,4 +1,5 @@
 """This module contains all Youtube related code."""
+
 # We need to access yt-dlp's internal methods for some features
 # pylint: disable=protected-access
 
@@ -198,19 +199,6 @@ class YoutubeSongProvider(SongProvider, Youtube):
                 os.remove(thumbnail)
             except FileNotFoundError:
                 logging.info("tried to delete %s but does not exist", thumbnail)
-
-            try:
-                # tag the file with replaygain to perform volume normalization
-                subprocess.call(
-                    ["rganalysis", location],
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                )
-            except OSError as error:
-                if error.errno == errno.ENOENT:
-                    pass  # the rganalysis package was not found. Skip normalization
-                else:
-                    raise
 
         except yt_dlp.utils.DownloadError as error:
             download_error = error

@@ -11,6 +11,9 @@ module.exports = {
       jQuery: 'jquery',
     }),
   ],
+  resolve: {
+    preferRelative: true,
+  },
   output: {
     filename: './bundle.js',
   },

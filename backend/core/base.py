@@ -13,7 +13,6 @@ from django.urls import reverse
 
 from django.conf import settings as conf
 from core import models, redis, user_manager
-from core.lights import controller
 from core.musiq import musiq
 from core.settings import storage
 from core.settings import system
@@ -84,7 +83,6 @@ def context(request: WSGIRequest) -> Dict[str, Any]:
         "local_enabled": storage.get("local_enabled"),
         "youtube_enabled": storage.get("youtube_enabled"),
         "spotify_enabled": storage.get("spotify_enabled"),
-        "soundcloud_enabled": storage.get("soundcloud_enabled"),
         "jamendo_enabled": storage.get("jamendo_enabled"),
     }
 
@@ -102,16 +100,9 @@ def state_dict() -> Dict[str, Any]:
         "visitors": models.Counter.objects.get_or_create(id=1, defaults={"value": 0})[
             0
         ].value,
-        "lightsEnabled": redis.get("lights_active"),
         "playbackError": redis.get("playback_error"),
-        "alarm": redis.get("alarm_playing"),
         "defaultPlatform": default_platform,
     }
-
-
-def no_stream(request: WSGIRequest) -> HttpResponse:
-    """Renders the /stream page. If this is reached, there is no stream active."""
-    return render(request, "no_stream.html", context(request))
 
 
 def submit_hashtag(request: WSGIRequest) -> HttpResponse:
@@ -139,12 +130,6 @@ def set_user_color(request: WSGIRequest) -> None:
     """Set user color for indication of votes.
     Situated in base because the dropdown is accessible from every page."""
     return user_manager.set_user_color(request)
-
-
-def set_lights_shortcut(request: WSGIRequest) -> None:
-    """Request endpoint for the lights shortcut.
-    Situated in base because the dropdown is accessible from every page."""
-    return controller.set_lights_shortcut(request)
 
 
 def upgrade_available(_request: WSGIRequest) -> HttpResponse:

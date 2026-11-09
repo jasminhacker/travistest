@@ -36,12 +36,6 @@ class Player:
         Raises PlaybackError on error."""
         return False
 
-    def play_alarm(self, interrupt: bool, alarm_path: str) -> None:
-        raise NotImplementedError
-
-    def play_backup_stream(self):
-        raise NotImplementedError
-
 
 def _active_player():
     """Looks up the currently active player and returns the respective class.

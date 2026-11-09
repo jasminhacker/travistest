@@ -1,8 +1,7 @@
-graft raveberry/core/
 graft raveberry/config/
+graft raveberry/core/
 graft raveberry/logs/
 graft raveberry/main/
-graft raveberry/resources/
 graft raveberry/requirements/
 graft raveberry/scripts/
 graft raveberry/setup/

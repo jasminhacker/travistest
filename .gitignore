@@ -1,3 +1,4 @@
+.env
 __pycache__
 *.pyc
 *.swp
@@ -39,7 +40,6 @@ __pycache__
 
 # instance-specifig config files
 /backend/config/secret_key.txt
-/backend/config/homewifi
 /backend/config/youtube_cookies.pickle
 /backend/config/cache_dir
 

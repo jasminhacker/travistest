@@ -11,7 +11,6 @@
 	{% endif %}
 	const YOUTUBE_SUGGESTIONS = {{ youtube_suggestions|default:0 }};
 	const SPOTIFY_SUGGESTIONS = {{ spotify_suggestions|default:0 }};
-	const SOUNDCLOUD_SUGGESTIONS = {{ soundcloud_suggestions|default:0 }};
 	const JAMENDO_SUGGESTIONS = {{ jamendo_suggestions|default:0 }};
 
     urls['state'] = '{% url 'musiq-state' %}';

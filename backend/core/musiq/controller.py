@@ -130,7 +130,6 @@ def seek_forward(_request: WSGIRequest) -> None:
 
 def _skip() -> None:
     player.skip()
-    redis.put("backup_playing", False)
     try:
         current_song = models.CurrentSong.objects.get()
         current_song.created = timezone.now() - datetime.timedelta(
