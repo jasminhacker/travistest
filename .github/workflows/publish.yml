@@ -105,8 +105,8 @@ jobs:
       - name: Compare versions
         id: comparison
         run: |
-          if [ "$DOCKER_VERSION" != "$GITHUB_VERSION" ]; then echo "::set-output name=docker-status::update"; fi
-          if [ "$PYPI_VERSION" != "$GITHUB_VERSION" ]; then echo "::set-output name=pypi-status::update"; fi
+          if [ "$DOCKER_VERSION" != "$GITHUB_VERSION" ]; then echo "docker-status=update" >> "$GITHUB_OUTPUT"; fi
+          if [ "$PYPI_VERSION" != "$GITHUB_VERSION" ]; then echo "pypi-status=update" >> "$GITHUB_OUTPUT"; fi
   pypi-publish:
     runs-on: ubuntu-latest
     needs: [test-frontend, test-backend, check-versions]
