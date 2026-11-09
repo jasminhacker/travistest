@@ -89,7 +89,7 @@ jobs:
       - name: Prepare database
         run: |
           python backend/manage.py migrate
-      - run: python backend/manage.py test
+      - run: python backend/manage.py test -v 2
   check-versions:
     runs-on: ubuntu-latest
     outputs:
